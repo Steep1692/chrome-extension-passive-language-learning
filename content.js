@@ -1,8 +1,5 @@
 'use strict'
 
-const SAMPLE_DATA_SMALL = [{
-  original: 'pig', translation: '豕',
-},]
 const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
   'original': 'person', 'translation': '人'
 }, { 'original': 'left', 'translation': '左' }, { 'original': 'right', 'translation': '右' }, {
@@ -10,16 +7,6 @@ const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
 }, { 'original': 'good', 'translation': '好' }, { 'original': 'big', 'translation': '大' }, {
   'original': 'horse', 'translation': '马'
 }, { 'original': 'small', 'translation': '小' }, { 'original': 'pig', 'translation': '猪' }]
-
-// Function to handle input debouncing
-function debounce(func, delay) {
-  let timer
-
-  return function (...args) {
-    clearTimeout(timer)
-    timer = setTimeout(() => func(...args), delay)
-  }
-}
 
 const storeManager = (key, defaultValue) => {
   return {
@@ -35,17 +22,27 @@ const storeManager = (key, defaultValue) => {
 
 const IGNORED_TAGS = ['script', 'style', 'svg']
 
-const findWord = (word) => {
-  let queue = [document.body], curr
+const findNodesWithWord = (word, rootNode = document.body) => {
+  if (rootNode.nodeType === Node.TEXT_NODE) {
+    return rootNode.textContent?.toLowerCase().match(word) ? [rootNode] : []
+  }
+
+  let queue = [rootNode], curr
   const nodes = []
 
   while (curr = queue.pop()) {
-    if (IGNORED_TAGS.includes(curr.tagName.toLowerCase())) {
+    if (curr.nodeType !== Node.ELEMENT_NODE && curr.nodeType !== Node.TEXT_NODE) {
       continue
     }
+
+    if (curr.nodeType !== Node.TEXT_NODE && IGNORED_TAGS.includes(curr.tagName.toLowerCase())) {
+      continue
+    }
+
     if (!curr.textContent.toLowerCase().match(word)) {
       continue
     }
+
     for (var i = 0; i < curr.childNodes.length; ++i) {
       switch (curr.childNodes[i].nodeType) {
         case Node.TEXT_NODE : // 3
@@ -68,6 +65,10 @@ const replaceTextInNode = (node, text, newText) => {
 }
 
 const isInputNode = (node) => {
+  if (node.nodeType === Node.TEXT_NODE) {
+    return false
+  }
+
   var tagName = node.tagName.toLowerCase()
   if (tagName === 'textarea') return true
   if (tagName !== 'input') return false
@@ -76,9 +77,9 @@ const isInputNode = (node) => {
   return inputTypes.indexOf(type) >= 0
 }
 
-const replaceWords = (dictionary, config) => {
+const replaceWords = (dictionary, config, rootNode) => {
   for (let { original, translation } of dictionary) {
-    const nodesWithWord = findWord(original)
+    const nodesWithWord = findNodesWithWord(original, rootNode)
 
     for (const node of nodesWithWord) {
       if (config.replaceInputValues || !isInputNode(node)) {
@@ -88,32 +89,13 @@ const replaceWords = (dictionary, config) => {
   }
 }
 
-const observeDOM = (function () {
-  const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
+const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
 
-  return function (obj, callback) {
-    if (!obj || obj.nodeType !== 1) return
-
-    if (MutationObserver) {
-      // define a new observer
-      var mutationObserver = new MutationObserver(callback)
-
-      // have the observer observe for changes in children
-      mutationObserver.observe(obj, { childList: true, subtree: true })
-      return mutationObserver
-    }
-
-    // browser support fallback
-    else if (window.addEventListener) {
-      obj.addEventListener('DOMNodeInserted', callback, false)
-      // obj.addEventListener('DOMNodeRemoved', callback, false)
-    }
-  }
-})();
+function startObserving(observer) {
+  observer.observe(document.body, { subtree: true, childList: true, characterData: true, })
+}
 
 (async () => {
-  const replaceWordsDebounced = debounce(replaceWords, 500);
-
   const dictionaryStoreManager = storeManager('dictionary', SAMPLE_DATA)
   const configStoreManager = storeManager('config', {
     replaceInputValues: false,
@@ -150,14 +132,23 @@ const observeDOM = (function () {
 
   replaceWords(dataLatest.dictionary, dataLatest.config)
 
-  // Observe a specific DOM element:
-  observeDOM(document.body, function (m) {
-    var addedNodes = [], removedNodes = []
+  const observer = new MutationObserver(function (mutations) {
+    // To prevent an infinite loop after replaced the text, because it'd be a mutation.
+    // Thanks to https://github.com/marcioggs/text-changer-chrome-extension/blob/master/scripts/changeText.js#L61
+    observer.disconnect()
 
-    m.forEach(record => record.addedNodes.length & addedNodes.push(...record.addedNodes))
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList') {
+        for (const node of mutation.addedNodes) {
+          replaceWords(dataLatest.dictionary, dataLatest.config, node)
+        }
+      } else {
+        replaceWords(dataLatest.dictionary, dataLatest.config, mutation.target)
+      }
+    })
 
-    m.forEach(record => record.removedNodes.length & removedNodes.push(...record.removedNodes))
+    startObserving(observer)
+  })
 
-    replaceWordsDebounced(dataLatest.dictionary, dataLatest.config)
-  });
+  startObserving(observer)
 })()
