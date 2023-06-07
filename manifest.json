@@ -1,25 +1,34 @@
 {
-    "name": "Chrome Extension Starter Kit",
-    "version": "1.0",
-    "manifest_version": 2,
-    "description": "Chrome Extension starter Kit with es6 standards",
-    "browser_action": {
-        "default_icon": "images/icon.png",
-        "default_popup": "popup.html"
-    },
-    "permissions": [
-        "cookies",
-        "tabs",
-        "activeTab",
-        "declarativeContent",
-        "<all_urls>",
-        "storage",
-        "http://*/*",
-        "https://*/*"
+  "manifest_version": 3,
+  "name": "Passive Language Learning",
+  "version": "1.0",
+  "description": "Learn passively while browsing the web!",
+
+  "background": {
+    "service_worker": "service_worker.js",
+    "type": "module"
+  },
+
+  "content_scripts": [{
+    "matches": [
+      "<all_urls>"
     ],
-    "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
-    "background": {
-        "page": "background.html",
-        "persistent": false
-    }
+    "js": ["content.js"],
+    "run_at": "document_idle",
+    "all_frames": false
+  }],
+
+  "permissions": [
+    "storage"
+  ],
+
+  "action": {
+    "default_title": "Passive Language Learning",
+    "default_icon": "icon.png",
+    "default_popup": "popup.html"
+  },
+
+  "icons": {
+    "128": "icon.png"
+  }
 }
