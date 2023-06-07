@@ -1,7 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[feat] Add gitignore file" />
+    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[CEPLL-1] feat: add gitignore file">
+      <change beforePath="$PROJECT_DIR$/about.txt" beforeDir="false" afterPath="$PROJECT_DIR$/about.txt" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
