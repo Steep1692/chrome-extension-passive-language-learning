@@ -3,7 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <link rel="stylesheet" href="popup.css">
+  <link rel="stylesheet" href="header.css">
+  <link rel="stylesheet" href="list.css">
+  <link rel="stylesheet" href="form.css">
+  <link rel="stylesheet" href="bubbles.css">
   <script src="popup.js"></script>
+  <script src="grass.js"></script>
   <title>Passive Language Learning</title>
 </head>
 
@@ -11,45 +16,49 @@
 
 <main>
   <header>
-    <span class="logo">豕</span>
     <h1>Passive Language Learning</h1>
     <span class="made-in-ukraine-with-love">Made in Ukraine with love!</span>
   </header>
 
-  <div class="list-header">
-    <div><b>#</b></div>
-    <div><b>Original</b></div>
-    <div><b>Translation</b></div>
-    <div><b>Actions</b></div>
-  </div>
-  <ol id="todo-list">
-    <!-- Todo items will be dynamically added here -->
-  </ol>
+<!--  <p class="description">-->
+<!--    Words from the <b>Original</b> column will be replaced-->
+<!--    <br>by words from the <b>Translation</b> column on every website you visit!-->
+<!--  </p>-->
 
-  <p class="description">
-    Words from the <b>Original</b> list will be replaced
-    <br>by words from the <b>Translation</b> list on every website you visit!
-  </p>
 
-  <form id="add-todo-form">
-    <label class="form-label" for="original-input">
-      <span>Original:</span>
-      <input class="form-input" type="text" id="original-input" placeholder="pig" required>
-    </label>
+  <pll-grass-background>
+      <section class="items">
+          <div class="list-header">
+              <div><b>#</b></div>
+              <div><b>Original</b></div>
+              <div><b>Translation</b></div>
+              <div><b>Actions</b></div>
+          </div>
+          <ol id="todo-list">
+              <!-- Todo items will be dynamically added here -->
+          </ol>
+      </section>
+    <form id="add-todo-form">
+      <label class="form-label" for="original-input">
+        <span>Original:</span>
+        <input class="form-input" type="text" id="original-input" placeholder="pig" required>
+      </label>
 
-    <label class="form-label" for="translation-input">
-      <span>Translation:</span>
-      <input class="form-input" type="text" id="translation-input" placeholder="豕" required>
-    </label>
+      <label class="form-label" for="translation-input">
+        <span>Translation:</span>
+        <input class="form-input" type="text" id="translation-input" placeholder="豕" required>
+      </label>
 
-    <button type="submit" class="button">
-      Add&nbsp;
-      <span class="emoji-wrap">
+      <button type="submit" class="button-submit">
+        Add&nbsp;
+        <span class="emoji-wrap">
         <span class="emoji-valid">🐻</span>
         <span class="emoji-active">👍</span>
       </span>
-    </button>
-  </form>
+      </button>
+
+    </form>
+  </pll-grass-background>
 </main>
 </body>
 

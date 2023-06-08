@@ -1,27 +1,3 @@
-// class Field {
-//   index
-//   fieldKey
-//   className
-//   textContent
-//
-//   constructor({ index, className, fieldKey, textContent }) {
-//     this.idnex = index
-//     this.fieldKey = fieldKey;
-//     this.className = className;
-//     this.textContent = textContent;
-//   }
-//
-//   render() {
-//
-//   }
-//
-//   delete() {
-//     todoItems.splice(index, 1)
-//     renderList()
-//   }
-// }
-
-
 class ContentScriptEmitter {
   async #emit(message) {
     const [tab] = await chrome.tabs.query({ active: true, lastFocusedWindow: true })
