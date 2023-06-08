@@ -1,5 +1,7 @@
 // Code is based on the following codepen by @tillberger: https://codepen.io/tillberger/pen/MWqbWZJ
 
+// A different codepen by @KPCodes: https://codepen.io/KPCodes/pen/vxoqzW
+
 class GrassWebComponent extends HTMLElement {
   constructor() {
     super()
