@@ -20,7 +20,8 @@ const storeManager = (key, defaultValue) => {
   }
 }
 
-const IGNORED_TAGS = ['script', 'style', 'svg']
+const CODE_MARKUP_TAG = 'pre'
+const IGNORED_TAGS = [CODE_MARKUP_TAG, 'script', 'style', 'svg']
 
 const findNodesWithWord = (word, rootNode = document.body) => {
   if (rootNode.nodeType === Node.TEXT_NODE) {
@@ -64,17 +65,31 @@ const replaceTextInNode = (node, text, newText) => {
   node.textContent = node.textContent.replaceAll(new RegExp(text, 'gi'), newText)
 }
 
+function hasEditableParent(element) {
+  let parent = element.parentNode
+  while (parent !== null) {
+    if (isInputNode(parent)) {
+      return true
+    }
+    parent = parent.parentElement
+  }
+  return false
+}
+
+const INPUT_TAGS = ['textarea', 'input', 'select']
+const CLASSNAME_GITLAB_DIFF_CONTENT = 'diff-content'
+
 const isInputNode = (node) => {
   if (node.nodeType === Node.TEXT_NODE) {
     return false
   }
 
-  var tagName = node.tagName.toLowerCase()
-  if (tagName === 'textarea') return true
-  if (tagName !== 'input') return false
-  var type = node.getAttribute('type').toLowerCase(), // if any of these input types is not supported by a browser, it will behave as input type text.
-    inputTypes = ['text', 'password', 'number', 'email', 'tel', 'url', 'search', 'date', 'datetime', 'datetime-local', 'time', 'month', 'week']
-  return inputTypes.indexOf(type) >= 0
+  return (
+    INPUT_TAGS.includes(node.tagName.toLowerCase())
+    || node.contentEditable === 'true'
+    || node.role === 'textbox'
+    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
+  )
 }
 
 const replaceWords = (dictionary, config, rootNode) => {
@@ -82,7 +97,7 @@ const replaceWords = (dictionary, config, rootNode) => {
     const nodesWithWord = findNodesWithWord(original, rootNode)
 
     for (const node of nodesWithWord) {
-      if (config.replaceInputValues || !isInputNode(node)) {
+      if (config.replaceInputValues || (!isInputNode(node) && !hasEditableParent(node))) {
         replaceTextInNode(node, original, translation)
       }
     }
