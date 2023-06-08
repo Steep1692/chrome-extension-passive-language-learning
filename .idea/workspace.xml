@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[CEPLL] fix: ignore IDE idea folder">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[CEPLL-32] feat: gitlab commit MR integration">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/popup.css" beforeDir="false" afterPath="$PROJECT_DIR$/popup.css" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +20,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="fix/CEPLL-18_prevent-replacing-in-text-editors" />
+        <entry key="$PROJECT_DIR$" value="master" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -69,7 +69,7 @@
       <workItem from="1686084187868" duration="1644000" />
       <workItem from="1686085852418" duration="35711000" />
       <workItem from="1686173040593" duration="9206000" />
-      <workItem from="1686213589041" duration="5156000" />
+      <workItem from="1686213589041" duration="6440000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1686155341128</created>
@@ -148,7 +148,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686235680423</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="[CEPLL] fix: ignore IDE idea folder">
+      <created>1686236025581</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1686236025581</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -188,7 +195,8 @@
     <MESSAGE value="[CEPLL-18] fix: ignoring WebStorm IDE config folder" />
     <MESSAGE value="[CEPLL-30] fix: broken gitlab page&#10;&#10;Added: replace only in text nodes, because when replacing text in non-text nodes using {textContent} they lose their children elements." />
     <MESSAGE value="[CEPLL] fix: ignore IDE idea folder" />
-    <option name="LAST_COMMIT_MESSAGE" value="[CEPLL] fix: ignore IDE idea folder" />
+    <MESSAGE value="[CEPLL-32] feat: gitlab commit MR integration" />
+    <option name="LAST_COMMIT_MESSAGE" value="[CEPLL-32] feat: gitlab commit MR integration" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
