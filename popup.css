@@ -398,7 +398,7 @@ header {
   position: relative;
 
   margin: 0;
-  padding: 18px 12px;
+  padding: 10px 12px;
 
   display: grid;
   align-items: center;
@@ -427,7 +427,7 @@ header {
 h1 {
   font-weight: 400;
   letter-spacing: 0.1em;
-  font-size: 21px;
+  font-size: 19px;
   text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
   margin: 0 0 -4px;
 }

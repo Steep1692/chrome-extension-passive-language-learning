@@ -20,12 +20,26 @@ const storeManager = (key, defaultValue) => {
   }
 }
 
-const CODE_MARKUP_TAG = 'pre'
-const IGNORED_TAGS = [CODE_MARKUP_TAG, 'script', 'style', 'svg']
+const CODE_MARKUP_TAGS = ['pre', 'code']
+const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg']
+
+const isNumeric = (str) => /^\d+$/.test(str)
+
+const createMatchRegExp = (word) => (
+  isNumeric(word)
+    ? new RegExp(word, 'g')
+    : new RegExp(`(?<!\\w)` + word + `(s|и|ы)?(?!\\w)`, 'gi')
+)
+
+const matches = (node, word) => node.textContent.match(createMatchRegExp(word))
+
+const replace = (node, original, translation) => {
+  node.textContent = node.textContent.replaceAll(createMatchRegExp(original), translation)
+}
 
 const findTextNodesByWord = (word, rootNode) => {
   if (rootNode.nodeType === Node.TEXT_NODE) {
-    return rootNode.textContent?.toLowerCase().match(word) ? [rootNode] : []
+    return matches(rootNode, word) ? [rootNode] : []
   }
 
   let queue = [rootNode], curr
@@ -40,21 +54,21 @@ const findTextNodesByWord = (word, rootNode) => {
       continue
     }
 
-    if (!curr.textContent.toLowerCase().match(word)) {
-      continue
-    }
+    for (const childNode of curr.childNodes) {
 
-    for (var i = 0; i < curr.childNodes.length; ++i) {
-      switch (curr.childNodes[i].nodeType) {
-        case Node.TEXT_NODE :
-          if (curr.childNodes[i].textContent.toLowerCase().match(word)) {
-            nodes.push(curr.childNodes[i])
-          }
-          break
-        case Node.ELEMENT_NODE :
-          queue.push(curr.childNodes[i])
-          break
+      if (childNode.nodeType === Node.TEXT_NODE) {
+        if (matches(childNode, word)) {
+          nodes.push(childNode)
+        }
+      } else if (childNode.nodeType === Node.ELEMENT_NODE) {
+        // (Idea for possible optimisation) Don't go too deep if the word is not in the element node.
+        if (!matches(childNode, word)) {
+          continue
+        }
+
+        queue.push(childNode)
       }
+
     }
   }
 
@@ -91,7 +105,7 @@ const replaceWords = (dictionary, config, rootNode) => {
 
     for (const node of nodesWithWord) {
       if (!hasEditableParent(node)) {
-        node.textContent = node.textContent.replaceAll(new RegExp(original, 'gi'), translation)
+        replace(node, original, translation)
       }
     }
   }
