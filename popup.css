@@ -515,14 +515,6 @@ main {
 /*  */
 /*}*/
 
-#todo-list > :first-child {
-  margin-top: 20px;
-}
-
-#todo-list > :last-child {
-  margin-bottom: 10px;
-}
-
 .todo-item {
   padding: 4px 10px 4px 2px;
   margin-left: 20px;
