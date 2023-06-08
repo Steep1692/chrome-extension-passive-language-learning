@@ -1,9 +1,45 @@
-/*** <--- CONTAINER ---> ***/
+// Code is based on the following codepen by @Paolo-Duzioni: https://codepen.io/Paolo-Duzioni/pen/MQmbJo
+
+class BubbleWebComponent extends HTMLElement {
+  constructor() {
+    super()
+    this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this.render()
+    const appendAnimationBubbles = () => {
+      console.log(this.shadowRoot)
+      const $root = this.shadowRoot.querySelector('.root')
+      const $container = document.createElement('div')
+
+      $container.className = 'bottom-particles'
+
+      const $bubble = document.createElement('div')
+      $bubble.classList.add('bottom-particles', 'bubble')
+
+      for (let i = 0; i < 50; i++) {
+        $container.appendChild($bubble.cloneNode(true))
+      }
+
+      $root.appendChild($container)
+    }
+    appendAnimationBubbles()
+  }
+
+  render() {
+    this.shadowRoot.innerHTML = `
+      <style>
+      .root {
+      position: relative;
+      }
+      
 .bottom-particles {
   position: absolute;
-  bottom: 0;
+  bottom: 50%;
   left: 0;
   width: 100%;
+  opacity: 0.5;
 }
 .bottom-particles .bubble {
   opacity: 0;
@@ -278,3 +314,13 @@
     transform: translate(0, -100vh) scale(0.2);
   }
 }
+      </style>
+
+      <header class="root">
+        <slot></slot>
+      </header>
+    `
+  }
+}
+
+customElements.define('pll-bubble-background', BubbleWebComponent)

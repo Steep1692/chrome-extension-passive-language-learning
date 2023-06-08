@@ -214,21 +214,7 @@ const fetchTranslation = async (value, options) => {
 }
 
 // appends bubble elements to header, to not write them manually
-const appendAnimationBubbles = () => {
-  const $header = document.querySelector('header');
-  const $container = document.createElement('div');
 
-  $container.className = 'bottom-particles'
-
-  const $bubble = document.createElement('div');
-  $bubble.classList.add('bottom-particles', 'bubble');
-
-  for (let i = 0; i < 50; i++) {
-    $container.appendChild($bubble.cloneNode(true));
-  }
-
-  $header.appendChild($container);
-};
 
 const main = async () => {
   const contentScriptEmitter = new ContentScriptEmitter()
@@ -297,8 +283,6 @@ const main = async () => {
 
     isLastTransSetFromAPI = false
   })
-
-  appendAnimationBubbles()
 
   $originalInput.focus()
 }
