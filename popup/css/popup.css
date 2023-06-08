@@ -57,7 +57,7 @@ form:not(:valid) button {
 
 @font-face {
     font-family: CherryBombOne-Regular;
-    src: url(CherryBombOne-Regular.ttf);
+    src: url(../fonts/CherryBombOne-Regular.ttf);
 }
 
 button:not(:disabled) {
