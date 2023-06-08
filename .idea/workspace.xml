@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[CEPLL-18] fix: add case gitlab 'diff-content' element">
+    <list default="true" id="729a9086-ef64-43ab-9932-d046332c2bb5" name="Changes" comment="[CEPLL-18] fix: ignoring WebStorm IDE config folder">
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content.js" beforeDir="false" afterPath="$PROJECT_DIR$/content.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -68,7 +69,8 @@
       <workItem from="1686072721789" duration="9560000" />
       <workItem from="1686084187868" duration="1644000" />
       <workItem from="1686085852418" duration="35711000" />
-      <workItem from="1686173040593" duration="8451000" />
+      <workItem from="1686173040593" duration="9206000" />
+      <workItem from="1686213589041" duration="4554000" />
     </task>
     <task id="LOCAL-00001" summary="Initial commit">
       <created>1686155341128</created>
@@ -119,7 +121,14 @@
       <option name="project" value="LOCAL" />
       <updated>1686184651860</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="[CEPLL-18] fix: ignoring WebStorm IDE config folder">
+      <created>1686184691059</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1686184691059</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -156,7 +165,8 @@
     <MESSAGE value="[CEPLL] fix: minor" />
     <MESSAGE value="[CEPLL-18] fix: prevent replacing in text editors" />
     <MESSAGE value="[CEPLL-18] fix: add case gitlab 'diff-content' element" />
-    <option name="LAST_COMMIT_MESSAGE" value="[CEPLL-18] fix: add case gitlab 'diff-content' element" />
+    <MESSAGE value="[CEPLL-18] fix: ignoring WebStorm IDE config folder" />
+    <option name="LAST_COMMIT_MESSAGE" value="[CEPLL-18] fix: ignoring WebStorm IDE config folder" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

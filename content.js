@@ -23,7 +23,7 @@ const storeManager = (key, defaultValue) => {
 const CODE_MARKUP_TAG = 'pre'
 const IGNORED_TAGS = [CODE_MARKUP_TAG, 'script', 'style', 'svg']
 
-const findNodesWithWord = (word, rootNode = document.body) => {
+const findTextNodesByWord = (word, rootNode) => {
   if (rootNode.nodeType === Node.TEXT_NODE) {
     return rootNode.textContent?.toLowerCase().match(word) ? [rootNode] : []
   }
@@ -46,12 +46,12 @@ const findNodesWithWord = (word, rootNode = document.body) => {
 
     for (var i = 0; i < curr.childNodes.length; ++i) {
       switch (curr.childNodes[i].nodeType) {
-        case Node.TEXT_NODE : // 3
+        case Node.TEXT_NODE :
           if (curr.childNodes[i].textContent.toLowerCase().match(word)) {
-            nodes.push(curr)
+            nodes.push(curr.childNodes[i])
           }
           break
-        case Node.ELEMENT_NODE : // 1
+        case Node.ELEMENT_NODE :
           queue.push(curr.childNodes[i])
           break
       }
@@ -61,12 +61,17 @@ const findNodesWithWord = (word, rootNode = document.body) => {
   return nodes
 }
 
-const replaceTextInNode = (node, text, newText) => {
-  node.textContent = node.textContent.replaceAll(new RegExp(text, 'gi'), newText)
+const isInputNode = (node) => {
+  return (
+    INPUT_TAGS.includes(node.tagName.toLowerCase())
+    || node.contentEditable === 'true'
+    || node.role === 'textbox'
+    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
+  )
 }
 
-function hasEditableParent(element) {
-  let parent = element.parentNode
+function hasEditableParent(node) {
+  let parent = node.parentNode
   while (parent !== null) {
     if (isInputNode(parent)) {
       return true
@@ -79,29 +84,18 @@ function hasEditableParent(element) {
 const INPUT_TAGS = ['textarea', 'input', 'select']
 const CLASSNAME_GITLAB_DIFF_CONTENT = 'diff-content'
 
-const isInputNode = (node) => {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return false
-  }
-
-  return (
-    INPUT_TAGS.includes(node.tagName.toLowerCase())
-    || node.contentEditable === 'true'
-    || node.role === 'textbox'
-    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
-  )
-}
-
 const replaceWords = (dictionary, config, rootNode) => {
+
   for (let { original, translation } of dictionary) {
-    const nodesWithWord = findNodesWithWord(original, rootNode)
+    const nodesWithWord = findTextNodesByWord(original, rootNode)
 
     for (const node of nodesWithWord) {
-      if (config.replaceInputValues || (!isInputNode(node) && !hasEditableParent(node))) {
-        replaceTextInNode(node, original, translation)
+      if (!hasEditableParent(node)) {
+        node.textContent = node.textContent.replaceAll(new RegExp(original, 'gi'), translation)
       }
     }
   }
+
 }
 
 const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
@@ -145,7 +139,7 @@ function startObserving(observer) {
     }
   })
 
-  replaceWords(dataLatest.dictionary, dataLatest.config)
+  replaceWords(dataLatest.dictionary, dataLatest.config, document.body)
 
   const observer = new MutationObserver(function (mutations) {
     // To prevent an infinite loop after replaced the text, because it'd be a mutation.
