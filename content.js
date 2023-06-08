@@ -77,6 +77,7 @@ function hasEditableParent(element) {
 }
 
 const INPUT_TAGS = ['textarea', 'input', 'select']
+const CLASSNAME_GITLAB_DIFF_CONTENT = 'diff-content'
 
 const isInputNode = (node) => {
   if (node.nodeType === Node.TEXT_NODE) {
@@ -87,6 +88,7 @@ const isInputNode = (node) => {
     INPUT_TAGS.includes(node.tagName.toLowerCase())
     || node.contentEditable === 'true'
     || node.role === 'textbox'
+    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
   )
 }
 
