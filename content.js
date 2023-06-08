@@ -20,9 +20,10 @@ const storeManager = (key, defaultValue) => {
   }
 }
 
-const IGNORED_TAGS = ['script', 'style', 'svg']
+const CODE_MARKUP_TAG = 'pre'
+const IGNORED_TAGS = [CODE_MARKUP_TAG, 'script', 'style', 'svg']
 
-const findNodesWithWord = (word, rootNode = document.body) => {
+const findTextNodesByWord = (word, rootNode) => {
   if (rootNode.nodeType === Node.TEXT_NODE) {
     return rootNode.textContent?.toLowerCase().match(word) ? [rootNode] : []
   }
@@ -45,12 +46,12 @@ const findNodesWithWord = (word, rootNode = document.body) => {
 
     for (var i = 0; i < curr.childNodes.length; ++i) {
       switch (curr.childNodes[i].nodeType) {
-        case Node.TEXT_NODE : // 3
+        case Node.TEXT_NODE :
           if (curr.childNodes[i].textContent.toLowerCase().match(word)) {
-            nodes.push(curr)
+            nodes.push(curr.childNodes[i])
           }
           break
-        case Node.ELEMENT_NODE : // 1
+        case Node.ELEMENT_NODE :
           queue.push(curr.childNodes[i])
           break
       }
@@ -60,33 +61,41 @@ const findNodesWithWord = (word, rootNode = document.body) => {
   return nodes
 }
 
-const replaceTextInNode = (node, text, newText) => {
-  node.textContent = node.textContent.replaceAll(new RegExp(text, 'gi'), newText)
-}
-
 const isInputNode = (node) => {
-  if (node.nodeType === Node.TEXT_NODE) {
-    return false
-  }
-
-  var tagName = node.tagName.toLowerCase()
-  if (tagName === 'textarea') return true
-  if (tagName !== 'input') return false
-  var type = node.getAttribute('type').toLowerCase(), // if any of these input types is not supported by a browser, it will behave as input type text.
-    inputTypes = ['text', 'password', 'number', 'email', 'tel', 'url', 'search', 'date', 'datetime', 'datetime-local', 'time', 'month', 'week']
-  return inputTypes.indexOf(type) >= 0
+  return (
+    INPUT_TAGS.includes(node.tagName.toLowerCase())
+    || node.contentEditable === 'true'
+    || node.role === 'textbox'
+    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
+  )
 }
+
+function hasEditableParent(node) {
+  let parent = node.parentNode
+  while (parent !== null) {
+    if (isInputNode(parent)) {
+      return true
+    }
+    parent = parent.parentElement
+  }
+  return false
+}
+
+const INPUT_TAGS = ['textarea', 'input', 'select']
+const CLASSNAME_GITLAB_DIFF_CONTENT = 'diff-content'
 
 const replaceWords = (dictionary, config, rootNode) => {
+
   for (let { original, translation } of dictionary) {
-    const nodesWithWord = findNodesWithWord(original, rootNode)
+    const nodesWithWord = findTextNodesByWord(original, rootNode)
 
     for (const node of nodesWithWord) {
-      if (config.replaceInputValues || !isInputNode(node)) {
-        replaceTextInNode(node, original, translation)
+      if (!hasEditableParent(node)) {
+        node.textContent = node.textContent.replaceAll(new RegExp(original, 'gi'), translation)
       }
     }
   }
+
 }
 
 const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
@@ -130,7 +139,7 @@ function startObserving(observer) {
     }
   })
 
-  replaceWords(dataLatest.dictionary, dataLatest.config)
+  replaceWords(dataLatest.dictionary, dataLatest.config, document.body)
 
   const observer = new MutationObserver(function (mutations) {
     // To prevent an infinite loop after replaced the text, because it'd be a mutation.
