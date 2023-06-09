@@ -13,9 +13,7 @@ const storeManager = (key, defaultValue) => {
     load: () => {
       return chrome.storage.local.get([key]).then((result) => result[key] ?? defaultValue)
     }, save: (payload) => {
-      return chrome.storage.local.set({ [key]: payload }).then(() => {
-        console.log('Value is set')
-      })
+      return chrome.storage.local.set({ [key]: payload })
     },
   }
 }
@@ -33,8 +31,8 @@ const isNumeric = (str) => /^\d+$/.test(str)
 
 const createMatchRegExp = (word) => (
   isNumeric(word)
-    ? new RegExp(word, 'g')
-    : new RegExp(`(?<!\\w)` + word + `[sиы]?(?!\\w)`, 'gim')
+    ? new RegExp(word, 'm')
+    : new RegExp(`(?<!\\w)` + word + `[sиы]?(?!\\w)`, 'im')
 )
 
 const matches = (node, word) => node.textContent.match(createMatchRegExp(word))
@@ -44,45 +42,46 @@ class AudioVolumeLower {
   loweredCollection = new Map()
 
   constructor(lowerValue) {
-    this.lowerValue = lowerValue;
+    this.lowerValue = lowerValue
   }
 
   lower() {
     document.querySelectorAll('video, audio').forEach((el) => {
       if (!el.paused && el.volume > this.lowerValue) {
-        this.loweredCollection.set(el, el.volume);
-        el.volume = this.lowerValue;
+        this.loweredCollection.set(el, el.volume)
+        el.volume = this.lowerValue
       }
     })
   }
+
   higher() {
     for (const [element, initialVolume] of this.loweredCollection) {
-      element.volume = initialVolume;
+      element.volume = initialVolume
     }
   }
 }
 
-const audioVolumeLower = new AudioVolumeLower(0.6);
+const audioVolumeLower = new AudioVolumeLower(0.6)
 
-const utterThis = new SpeechSynthesisUtterance(this.textContent);
-let utterThisLastNode = null;
-utterThis.lang = 'zh-CN';
-utterThis.rate = 0.8;
+const utterThis = new SpeechSynthesisUtterance(this.textContent)
+let utterThisLastNode = null
+utterThis.lang = 'zh-CN'
+utterThis.rate = 0.8
 
 const onFinished = () => {
-  audioVolumeLower.higher();
-  utterThisLastNode = null;
+  audioVolumeLower.higher()
+  utterThisLastNode = null
 }
-utterThis.onend = onFinished;
-utterThis.onpause = onFinished;
+utterThis.onend = onFinished
+utterThis.onpause = onFinished
 
 const showTooltip = (content, x, y) => {
   const $tooltip = document.getElementById('pll-tooltip')
-  $tooltip.style.left = x + 'px';
-  $tooltip.style.top = (y - 16) + 'px';
-  
+  $tooltip.style.left = x + 'px'
+  $tooltip.style.top = (y - 16) + 'px'
+
   const $tooltipContent = $tooltip.querySelector('.pll-tooltip-content')
-  $tooltipContent.innerHTML = content;
+  $tooltipContent.innerHTML = content
 }
 
 const hideTooltip = () => {
@@ -92,102 +91,104 @@ const hideTooltip = () => {
 
 // Needs refactoring
 function replaceNew_needs_refactoring_has_exceptions(element, original, translation) {
- try {
-   if (!element) {
-     return
-   }
+  try {
+    if (!element) {
+      return
+    }
 
-   const regex = createMatchRegExp(original)
+    const regex = createMatchRegExp(original)
 
-   var getNodes = function() {
-     var nodes = [],
-       offset = 0,
-       node,
-       nodeIterator = document.createNodeIterator(element, NodeFilter.SHOW_TEXT, null, false);
+    var getNodes = function () {
+      var nodes = [],
+        offset = 0,
+        node,
+        nodeIterator = document.createNodeIterator(element, NodeFilter.SHOW_TEXT, null, false)
 
-     while (node = nodeIterator.nextNode()) {
-       nodes.push({
-         textNode: node,
-         start: offset,
-         length: node.nodeValue.length
-       });
-       offset += node.nodeValue.length
-     }
-     return nodes;
-   }
+      while (node = nodeIterator.nextNode()) {
+        nodes.push({
+          textNode: node,
+          start: offset,
+          length: node.nodeValue.length
+        })
+        offset += node.nodeValue.length
+      }
+      return nodes
+    }
 
-   var nodes = getNodes();
-   if (!nodes.length)
-     return;
+    var nodes = getNodes()
+    if (!nodes.length)
+      return
 
-   var text = "";
-   for (var i = 0; i < nodes.length; ++i)
-     text += nodes[i].textNode.nodeValue;
+    var text = ''
+    for (var i = 0; i < nodes.length; ++i)
+      text += nodes[i].textNode.nodeValue
 
-   for (let match of text.matchAll(regex)) {
-     // Prevent empty matches causing infinite loops
-     if (!match[0].length)
-     {
-       regex.lastIndex++;
-       continue;
-     }
+    let match
+    while (match = text.match(regex)) {
+      // Prevent empty matches causing infinite loops
+      if (!match[0].length) {
+        continue
+      }
 
-     // Find the start and end text node
-     var startNode = null, endNode = null;
-     for (i = 0; i < nodes.length; ++i) {
-       var node = nodes[i];
+      // Find the start and end text node
+      var startNode = null, endNode = null
+      for (i = 0; i < nodes.length; ++i) {
+        var node = nodes[i]
 
-       if (node.start + node.length <= match.index)
-         continue;
+        if (node.start + node.length <= match.index)
+          continue
 
-       if (!startNode)
-         startNode = node;
+        if (!startNode)
+          startNode = node
 
-       if (node.start + node.length >= match.index + match[0].length)
-       {
-         endNode = node;
-         break;
-       }
-     }
+        if (node.start + node.length >= match.index + match[0].length) {
+          endNode = node
+          break
+        }
+      }
 
-     var range = document.createRange();
-     range.setStart(startNode.textNode, match.index - startNode.start);
-     range.setEnd(endNode.textNode, match.index + match[0].length - endNode.start);
-     var spanNode = document.createElement("span");
-     spanNode.className = "highlight";
+      var range = document.createRange()
+      range.setStart(startNode.textNode, match.index - startNode.start)
+      range.setEnd(endNode.textNode, match.index + match[0].length - endNode.start)
+      var spanNode = document.createElement('span')
+      spanNode.className = 'highlight'
 
-     const $fragment = new DocumentFragment()
-     $fragment.append(translation);
-     range.extractContents()
-     spanNode.appendChild($fragment);
+      const $fragment = new DocumentFragment()
+      $fragment.append(translation)
+      range.extractContents()
+      spanNode.appendChild($fragment)
 
-     spanNode.addEventListener('mouseover', function (event) {
-       utterThis.text = this.textContent;
-       speechSynthesis.cancel()
-       audioVolumeLower.lower();
-       speechSynthesis.speak(utterThis);
-       utterThisLastNode = this;
-       const rect = this.getBoundingClientRect()
-       showTooltip(original, rect.right - rect.width / 2, rect.top)
-     })
-     spanNode.addEventListener('mouseout', function () {
-       if (utterThisLastNode === this) {
-         speechSynthesis.pause()
-       }
+      spanNode.addEventListener('mouseover', function (event) {
+        utterThis.text = this.textContent
+        speechSynthesis.cancel()
+        audioVolumeLower.lower()
+        speechSynthesis.speak(utterThis)
+        utterThisLastNode = this
+        const rect = this.getBoundingClientRect()
+        showTooltip(original, rect.right - rect.width / 2, rect.top)
+      })
+      spanNode.addEventListener('mouseout', function () {
+        if (utterThisLastNode === this) {
+          speechSynthesis.pause()
+        }
         hideTooltip()
-     })
+      })
 
-     range.insertNode(spanNode);
+      range.insertNode(spanNode)
 
-     nodes = getNodes();
-   }
- } catch (e) {
-   console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
-     original,
-     elementTextContent: element?.textContent
- })
-   console.log(e)
- }
+      nodes = getNodes()
+      text = ''
+      for (var i = 0; i < nodes.length; ++i)
+        text += nodes[i].textNode.nodeValue
+
+    }
+  } catch (e) {
+    console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
+      original,
+      elementTextContent: element?.textContent
+    })
+    console.log(e)
+  }
 }
 
 const replace = (node, original, translation) => {
@@ -339,12 +340,12 @@ const injectHTML = () => {
 }
 
 const injectTooltip = () => {
-  injectHTML();
-  injectStyles();
+  injectHTML()
+  injectStyles()
 }
 
 (async () => {
-  injectTooltip();
+  injectTooltip()
 
   const dictionaryStoreManager = storeManager('dictionary', SAMPLE_DATA)
   const configStoreManager = storeManager('config', {
