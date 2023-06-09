@@ -31,7 +31,7 @@ const isNumberBetweenEquals = (number, min, max) => {
 };
 
 const CODE_MARKUP_TAGS = ['pre', 'code']
-const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg']
+const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg', 'head']
 
 const isIgnored = (node) => (
   (node.nodeType === Node.TEXT_NODE || IGNORED_TAGS.includes(node.tagName.toLowerCase()))
