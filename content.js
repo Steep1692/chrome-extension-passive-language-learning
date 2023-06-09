@@ -182,14 +182,16 @@ function replaceNew_needs_refactoring_has_exceptions(element, original, translat
      nodes = getNodes();
    }
  } catch (e) {
+   console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
+     original,
+     elementTextContent: element?.textContent
+ })
    console.log(e)
-   console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', error)
  }
 }
 
 const replace = (node, original, translation) => {
-  replaceNew_needs_refactoring_has_exceptions(node.parentNode, original, translation)
-  // node.textContent = node.textContent.replaceAll(createMatchRegExp(original), translation)
+  return replaceNew_needs_refactoring_has_exceptions(node.parentNode, original, translation)
 }
 
 const findTextNodesByWord = (word, rootNode) => {
@@ -205,7 +207,7 @@ const findTextNodesByWord = (word, rootNode) => {
       continue
     }
 
-    if (curr.nodeType !== Node.TEXT_NODE && IGNORED_TAGS.includes(curr.tagName.toLowerCase())) {
+    if (curr.nodeType !== Node.TEXT_NODE && isIgnored(curr)) {
       continue
     }
 
@@ -239,10 +241,10 @@ const isInputNode = (node) => {
   )
 }
 
-function hasEditableParent(node) {
+function hasIgnoredParent(node) {
   let parent = node.parentNode
   while (parent !== null) {
-    if (isInputNode(parent)) {
+    if (isIgnored(parent)) {
       return true
     }
     parent = parent.parentElement
@@ -251,7 +253,6 @@ function hasEditableParent(node) {
 }
 
 const INPUT_TAGS = ['textarea', 'input', 'select']
-const CLASSNAME_GITLAB_DIFF_CONTENT = 'diff-content'
 
 const replaceWords = (dictionary, config, rootNode) => {
 
@@ -259,8 +260,11 @@ const replaceWords = (dictionary, config, rootNode) => {
     const nodesWithWord = findTextNodesByWord(original, rootNode)
 
     for (const node of nodesWithWord) {
-      if (!hasEditableParent(node)) {
+      if (!hasIgnoredParent(node)) {
         replace(node, original, translation)
+        if (rootNode.parentNode && rootNode.parentNode !== document) {
+          rootNode = rootNode.parentNode
+        }
       }
     }
   }
