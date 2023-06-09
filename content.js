@@ -23,6 +23,12 @@ const storeManager = (key, defaultValue) => {
 const CODE_MARKUP_TAGS = ['pre', 'code']
 const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg']
 
+const isIgnored = (node) => (
+  (node.nodeType === Node.TEXT_NODE || IGNORED_TAGS.includes(node.tagName.toLowerCase()))
+  || isInputNode(node)
+  || node.id === 'pll-tooltip'
+)
+
 const isNumeric = (str) => /^\d+$/.test(str)
 
 const createMatchRegExp = (word) => (
@@ -69,6 +75,20 @@ const onFinished = () => {
 }
 utterThis.onend = onFinished;
 utterThis.onpause = onFinished;
+
+const showTooltip = (content, x, y) => {
+  const $tooltip = document.getElementById('pll-tooltip')
+  $tooltip.style.left = x + 'px';
+  $tooltip.style.top = (y - 16) + 'px';
+  
+  const $tooltipContent = $tooltip.querySelector('.pll-tooltip-content')
+  $tooltipContent.innerHTML = content;
+}
+
+const hideTooltip = () => {
+  const $tooltip = document.getElementById('pll-tooltip')
+  $tooltip.style.left = ''
+}
 
 // Needs refactoring
 function replaceNew_needs_refactoring_has_exceptions(element, original, translation) {
@@ -141,17 +161,20 @@ function replaceNew_needs_refactoring_has_exceptions(element, original, translat
      range.extractContents()
      spanNode.appendChild($fragment);
 
-     spanNode.addEventListener('mouseover', function () {
+     spanNode.addEventListener('mouseover', function (event) {
        utterThis.text = this.textContent;
        speechSynthesis.cancel()
        audioVolumeLower.lower();
        speechSynthesis.speak(utterThis);
        utterThisLastNode = this;
+       const rect = this.getBoundingClientRect()
+       showTooltip(original, rect.right - rect.width / 2, rect.top)
      })
      spanNode.addEventListener('mouseout', function () {
        if (utterThisLastNode === this) {
          speechSynthesis.pause()
        }
+        hideTooltip()
      })
 
      range.insertNode(spanNode);
@@ -213,7 +236,6 @@ const isInputNode = (node) => {
     || node.contentEditable === 'true'
     || node.role === 'textbox'
     || node.role === 'listbox'
-    || node.classList.contains(CLASSNAME_GITLAB_DIFF_CONTENT)
   )
 }
 
@@ -251,7 +273,75 @@ function startObserving(observer) {
   observer.observe(document.body, { subtree: true, childList: true, characterData: true, })
 }
 
+const injectStyles = () => {
+  const $style = document.createElement('style')
+  $style.innerHTML = `
+      .pll-tooltip {
+          z-index: 9999999;
+          position: fixed;
+          left: -200px;
+        }
+        
+      .pll-tooltip-content {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%, -100%);
+        pointer-events: none;
+
+        margin-bottom: 5px;
+        padding: 7px;
+        min-width: 80px;
+        border-radius: 3px;
+        border: 1px solid #ddd;
+        background: linear-gradient(0deg, rgba(249, 255, 0, 1) 12%, rgba(0, 224, 255, 1) 82%);
+        box-shadow: 0 0 4px 1px yellow;
+
+        text-align: center;
+        font-size: 18px;
+        line-height: 1.2;
+
+
+        background-color: #fff;
+        color: #fff;
+        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+  }
+
+.pll-tooltip-arrow {
+   position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 50%);
+  pointer-events: none;
+
+  width: 0;
+  border-top: 5px solid #000;
+  border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+  border-right: 5px solid transparent;
+  border-left: 5px solid transparent;
+  font-size: 0;
+  line-height: 0;
+}`
+  document.head.appendChild($style)
+}
+
+const injectHTML = () => {
+  const $tooltip = document.createElement('div')
+  $tooltip.id = 'pll-tooltip'
+  $tooltip.classList.add('pll-tooltip')
+  $tooltip.innerHTML = `<div class="pll-tooltip-arrow"></div>
+        <div class="pll-tooltip-content"></div>`
+  document.body.appendChild($tooltip)
+}
+
+const injectTooltip = () => {
+  injectHTML();
+  injectStyles();
+}
+
 (async () => {
+  injectTooltip();
+
   const dictionaryStoreManager = storeManager('dictionary', SAMPLE_DATA)
   const configStoreManager = storeManager('config', {
     replaceInputValues: false,
