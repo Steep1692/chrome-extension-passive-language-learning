@@ -273,10 +273,9 @@ const findTextNodesByWord = (word, rootNode) => {
           nodes.push(childNode)
         }
       } else if (childNode.nodeType === Node.ELEMENT_NODE) {
-        // (Idea for possible optimisation) Don't go too deep if the word is not in the element node.
-        if (!matches(childNode, word)) {
-          continue
-        }
+        // DON'T match for text on this level!
+        // Because it brokes the next case:
+        // <a>Inline elements one by one in ONE line</a><span>without spaces</span>
 
         queue.push(childNode)
       }
