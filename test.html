@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    #timer {
+        font-size: 60px;
+        text-align: center;
+        margin-top: 100px;
+    }
+</style>
+<body>
+<div id="timer"></div>
+
+<h2>Websites to test</h2>
+
+<ul>
+    <li><a href="https://www.timeanddate.com/timer/">Timer</a></li>
+</ul>
+
+
+<h1>Should not be replaced</h1>
+<div contenteditable>Content editable – pig</div>
+<div role="listbox">List box (e.g. Youtube suggestions) – pig</div>
+<div role="textbox">Text box (e.g. Google DOC?) – pig</div>
+
+<svg height="140" width="140">
+    SVG – Pig
+    <defs>
+        <filter id="f1" x="0" y="0" width="200%" height="200%">
+            <feOffset result="offOut" in="SourceGraphic" dx="20" dy="20"/>
+            <feGaussianBlur result="blurOut" in="offOut" stdDeviation="10"/>
+            <feBlend in="SourceGraphic" in2="blurOut" mode="normal"/>
+        </filter>
+    </defs>
+    <rect width="90" height="90" stroke="green" stroke-width="3" fill="yellow" filter="url(#f1)"/>
+    Sorry, your browser does not support inline SVG.
+</svg>
+
+
+<pre>Code that should have preserved format - pig</pre>
+<code>Some code here - pig</code>
+<div>
+    <ul>
+        <li>personsome settings</li>
+        <li>personsome</li>
+        <li>For personsome settings</li>
+        <li>for personsome</li>
+        <li>for personsome</li>
+    </ul>
+</div>
+
+<h1>Should be replaced</h1>
+<div>Basic div: left and right pig, person</div>
+<span>
+
+<ul>
+    <li>person settings</li>
+<li>person</li>
+<li>persons</li>
+<li>For person settings</li>
+<li>for person</li>
+<li>for persons</li>
+</ul>
+
+    <ul>
+        <li>a2a</li>
+<li>2a</li>
+<li>a2</li>
+<li>2</li>
+<li>a22a</li>
+<li>22a</li>
+<li>a22</li>
+<li>22</li>
+    </ul>
+
+</span>
+
+</body>
+<script>
+  const $timer = document.getElementById('timer')
+
+  const setTimer = (seconds) => {
+    const minutes = Math.floor(seconds / 60)
+    const es = seconds % 60
+    $timer.innerText = `${minutes}:${es}`
+  }
+
+  let seconds = 120
+  setInterval(function () {
+    setTimer(seconds)
+    seconds--
+  }, 1000)
+</script>
+</html>
