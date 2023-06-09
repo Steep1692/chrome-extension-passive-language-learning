@@ -62,12 +62,28 @@ const createField = ({ index, className, fieldKey, textContent }, {
   const $label = document.createElement('span')
   $label.classList.add('field', className)
   $label.textContent = textContent
+
+  const showLabel = () => {
+    $input.classList.add(classNameHidden)
+    $label.classList.remove(classNameHidden)
+  }
+  const showInput = () => {
+    $label.classList.add(classNameHidden)
+    $input.classList.remove(classNameHidden)
+  }
+
   $label.addEventListener('click', function () {
     const $input = $label.nextSibling
 
-    $label.classList.add(classNameHidden)
-    $input.classList.remove(classNameHidden)
+    showInput()
     $input.focus()
+    document.addEventListener('keydown', function handler(event) {
+      event.preventDefault();
+      if (event.key === 'Escape') {
+        showLabel()
+        document.removeEventListener('keydown', handler)
+      }
+    })
   })
 
   const $input = document.createElement('input')
@@ -77,8 +93,7 @@ const createField = ({ index, className, fieldKey, textContent }, {
   $input.addEventListener('change', () => $input.hasChanged = true);
   $input.addEventListener('focus', () => $input.hasChanged = false);
   const onEditSuccess = () => {
-    $input.classList.add(classNameHidden)
-    $label.classList.remove(classNameHidden)
+    showLabel();
 
     if ($input.hasChanged) {
       const newValue = $input.value
