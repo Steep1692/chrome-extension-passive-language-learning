@@ -8,15 +8,27 @@ const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
   'original': 'horse', 'translation': '马'
 }, { 'original': 'small', 'translation': '小' }, { 'original': 'pig', 'translation': '猪' }]
 
-const storeManager = (key, defaultValue) => {
-  return {
-    load: () => {
-      return chrome.storage.local.get([key]).then((result) => result[key] ?? defaultValue)
-    }, save: (payload) => {
-      return chrome.storage.local.set({ [key]: payload })
-    },
+const TRANSLATION_LANG = 'zh-CN'
+
+
+class StoreManager {
+  constructor(key, defaultValue) {
+    this.key = key
+    this.defaultValue = defaultValue
+  }
+
+  load() {
+    return chrome.storage.local.get([this.key]).then((result) => result[this.key] ?? this.defaultValue)
+  }
+
+  save(payload) {
+    return chrome.storage.local.set({ [this.key]: payload })
   }
 }
+
+const isNumberBetweenEquals = (number, min, max) => {
+  return number >= min && number <= max;
+};
 
 const CODE_MARKUP_TAGS = ['pre', 'code']
 const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg']
@@ -37,7 +49,12 @@ const createMatchRegExp = (word) => (
 
 const matches = (node, word) => node.textContent.match(createMatchRegExp(word))
 
-class AudioVolumeLower {
+const getVideoElements = () => document.querySelectorAll('video')
+const getPlayingVideoElements = () => [...getVideoElements()].filter((el) => !el.paused)
+const getAudioElements = () => document.querySelectorAll('audio')
+const getPlayingAudioElements = () => [...getAudioElements()].filter((el) => !el.paused)
+
+class MediaVolumeLower {
   lowerValue
   loweredCollection = new Map()
 
@@ -45,35 +62,75 @@ class AudioVolumeLower {
     this.lowerValue = lowerValue
   }
 
+  #lowerIfNeeded($el) {
+    if ($el.volume > this.lowerValue) {
+      this.loweredCollection.set($el, $el.volume)
+      $el.volume = this.lowerValue
+    }
+  }
+
   lower() {
-    document.querySelectorAll('video, audio').forEach((el) => {
-      if (!el.paused && el.volume > this.lowerValue) {
-        this.loweredCollection.set(el, el.volume)
-        el.volume = this.lowerValue
-      }
-    })
+    for (const $el of getPlayingAudioElements()) {
+      this.#lowerIfNeeded($el)
+    }
+    for (const $el of getPlayingVideoElements()) {
+      this.#lowerIfNeeded($el)
+    }
   }
 
   higher() {
-    for (const [element, initialVolume] of this.loweredCollection) {
-      element.volume = initialVolume
+    for (const [$element, initialVolume] of this.loweredCollection) {
+      $element.volume = initialVolume
     }
   }
 }
 
-const audioVolumeLower = new AudioVolumeLower(0.6)
+class MediaPauser {
+  affectedCollection = []
 
-const utterThis = new SpeechSynthesisUtterance(this.textContent)
+  #pauseIfNeeded($el) {
+    if (!$el.paused) {
+      this.affectedCollection.push($el)
+      $el.pause()
+    }
+  }
+
+  pause() {
+    for (const $el of getPlayingAudioElements()) {
+      this.#pauseIfNeeded($el)
+    }
+    for (const $el of getPlayingVideoElements()) {
+      this.#pauseIfNeeded($el)
+    }
+  }
+
+  play() {
+    for (const $element of this.affectedCollection) {
+      $element.play()
+    }
+  }
+}
+
+const audioVolumeLower = new MediaVolumeLower(0.6)
+const mediaPauser = new MediaPauser()
+
+const utterThis = new SpeechSynthesisUtterance()
 let utterThisLastNode = null
-utterThis.lang = 'zh-CN'
-utterThis.rate = 0.8
 
 const onFinished = () => {
-  audioVolumeLower.higher()
   utterThisLastNode = null
+  audioVolumeLower.higher()
+  mediaPauser.play()
 }
+
+utterThis.lang = TRANSLATION_LANG
+utterThis.rate = 0.7
 utterThis.onend = onFinished
 utterThis.onpause = onFinished
+utterThis.onstart = () => {
+  audioVolumeLower.lower()
+  mediaPauser.pause()
+}
 
 const showTooltip = (content, x, y) => {
   const $tooltip = document.getElementById('pll-tooltip')
@@ -89,7 +146,6 @@ const hideTooltip = () => {
   $tooltip.style.left = ''
 }
 
-// Needs refactoring
 function replaceNew_needs_refactoring_has_exceptions(element, original, translation) {
   try {
     if (!element) {
@@ -151,7 +207,6 @@ function replaceNew_needs_refactoring_has_exceptions(element, original, translat
       range.setStart(startNode.textNode, match.index - startNode.start)
       range.setEnd(endNode.textNode, match.index + match[0].length - endNode.start)
       var spanNode = document.createElement('span')
-      spanNode.className = 'highlight'
 
       const $fragment = new DocumentFragment()
       $fragment.append(translation)
@@ -161,7 +216,6 @@ function replaceNew_needs_refactoring_has_exceptions(element, original, translat
       spanNode.addEventListener('mouseover', function (event) {
         utterThis.text = this.textContent
         speechSynthesis.cancel()
-        audioVolumeLower.lower()
         speechSynthesis.speak(utterThis)
         utterThisLastNode = this
         const rect = this.getBoundingClientRect()
@@ -297,36 +351,63 @@ const injectStyles = () => {
         margin-bottom: 5px;
         padding: 7px;
         min-width: 80px;
-        border-radius: 3px;
+        border-radius: 23px;
         border: 1px solid #ddd;
+
         background: linear-gradient(0deg, rgba(249, 255, 0, 1) 12%, rgba(0, 224, 255, 1) 82%);
+        background-size: 100% 200%;
+        color: #fff;
         box-shadow: 0 0 4px 1px yellow;
+        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
 
         text-align: center;
         font-size: 18px;
         line-height: 1.2;
 
-
-        background-color: #fff;
-        color: #fff;
-        text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+        animation: gradient 4s ease infinite forwards;
   }
 
 .pll-tooltip-arrow {
-   position: absolute;
+  position: absolute;
   top: 0;
   left: 50%;
   transform: translate(-50%, 50%);
   pointer-events: none;
 
   width: 0;
-  border-top: 5px solid #000;
-  border-top: 5px solid hsla(0, 0%, 20%, 0.9);
+  border-top: 5px solid black;
   border-right: 5px solid transparent;
   border-left: 5px solid transparent;
   font-size: 0;
   line-height: 0;
-}`
+  animation: bounce 0.5s ease infinite;
+}
+@keyframes bounce {
+  0% {
+    transform: translate(-50%, 50%) scale(0.5);
+  }
+  50% {
+    transform: translate(-50%, 50%) scale(1.2);
+  }
+  100% {
+    transform: translate(-50%, 50%) scale(1);
+  }
+}
+
+
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 0% -150%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+`
   document.head.appendChild($style)
 }
 
@@ -344,11 +425,114 @@ const injectTooltip = () => {
   injectStyles()
 }
 
+const experimental_feature_speakSubtitlesTranslatedWords = async () => {
+  const dictionaryMap = dataLatest.dictionary.reduce((acc, { original, translation }) => {
+    acc[original] = translation
+    return acc
+  }, {})
+
+  const videoSubtitlesSegments = await fetch("\n" +
+    "https://www.youtube.com/api/timedtext?v=06sDgp3wZUc&caps=asr&opi=112496729&xoaf=5&hl=en&ip=0.0.0.0&ipbits=0&expire=1686358692&sparams=ip%2Cipbits%2Cexpire%2Cv%2Ccaps%2Copi%2Cxoaf&signature=AB9096C5C7FB8E6AB447F59669274454E6A4882E.454C73185D3CCB253365C067A60668007FBB3899&key=yt8&kind=asr&lang=en&fmt=json3&xorb=2&xobt=3&xovt=3&cbrand=apple&cbr=Chrome&cbrver=114.0.0.0&c=WEB&cver=2.20230608.02.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform=DESKTOP")
+    .then(r => r.json())
+    .then((result) => {
+      const out = [];
+
+      let event, nextEvent;
+      for (let i = 0; i < result.events.length; i++) {
+        event = result.events[i]
+
+        if (!event.segs?.length) {
+          continue
+        }
+
+        nextEvent = result.events[i + 1]
+
+        const start = event.tStartMs;
+        const end = nextEvent?.tStartMs !== undefined ? nextEvent.tStartMs : (event.tStartMs + event.dDurationMs);
+
+        let segment, nextSegment
+        for (let j = 0; j < event.segs.length; j++) {
+          segment = event.segs[j]
+
+          if (!segment.utf8) {
+            continue
+          }
+
+          nextSegment = event.segs[j + 1]
+
+          out.push({
+            text: segment.utf8,
+            start: start + (segment.tOffsetMs ?? 0),
+            end: nextSegment?.tOffsetMs !== undefined ? (start + nextSegment?.tOffsetMs) : end,
+          })
+        }
+      }
+
+      return out
+    })
+
+  const mediaVolumeLower = new MediaVolumeLower(0)
+
+  const utterThis = new SpeechSynthesisUtterance(this.textContent)
+
+  utterThis.lang = TRANSLATION_LANG
+  utterThis.rate = 1.35
+  utterThis.onend = () => mediaVolumeLower.higher()
+  utterThis.onpause = () => mediaVolumeLower.higher()
+  utterThis.onboundary = () => mediaVolumeLower.lower()
+
+  for (const $video of getVideoElements()) {
+    let playing = !$video.paused
+
+    let lastText
+    const frame = () => {
+      const currentTimeMs = $video.currentTime * 1000 + 180
+
+      const segment = videoSubtitlesSegments.find(
+        (s) => isNumberBetweenEquals(currentTimeMs, s.start, s.end)
+      )
+      const text = segment?.text
+
+      if (text && lastText !== text) {
+        lastText = text
+
+        const textNormalized = segment?.text.trim().toLowerCase().replace(/[sиы]$/, '')
+        const translation = dictionaryMap[textNormalized]
+
+        if (translation) {
+          speechSynthesis.cancel()
+          console.log('speaking: ', text, ' as :', translation)
+          utterThis.text = translation
+          speechSynthesis.speak(utterThis)
+        }
+      }
+
+      if (playing) {
+        requestAnimationFrame(frame)
+      }
+    }
+
+    $video.addEventListener('play', () => {
+      playing = true
+      requestAnimationFrame(frame)
+    })
+    $video.addEventListener('pause', () => {
+      playing = false
+    })
+    $video.addEventListener('ended', () => {
+      playing = false
+    })
+
+    requestAnimationFrame(frame)
+  }
+};
+
+
 (async () => {
   injectTooltip()
 
-  const dictionaryStoreManager = storeManager('dictionary', SAMPLE_DATA)
-  const configStoreManager = storeManager('config', {
+  const dictionaryStoreManager = new StoreManager('dictionary', SAMPLE_DATA)
+  const configStoreManager = new StoreManager('config', {
     replaceInputValues: false,
   })
 
@@ -402,4 +586,8 @@ const injectTooltip = () => {
   })
 
   startObserving(observer)
+
+  if (false) {
+    experimental_feature_speakSubtitlesTranslatedWords();
+  }
 })()
