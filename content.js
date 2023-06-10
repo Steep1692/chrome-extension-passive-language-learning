@@ -8,10 +8,30 @@ const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
   'original': 'horse', 'translation': '马'
 }, { 'original': 'small', 'translation': '小' }, { 'original': 'pig', 'translation': '猪' }]
 
+const ORIGINAL_LANG = 'en'
 const TRANSLATION_LANG = 'zh-CN'
 
+class _NumberUtils {
+  static isNumeric = (str) => /^\d+$/.test(str)
+  static isNumberBetweenEquals = (number, min, max) => number >= min && number <= max
+}
 
-class StoreManager {
+class _DOMUtils {
+  static #INPUT_TAGS = ['textarea', 'input', 'select']
+
+  static isInputNode (node) {
+    return (
+      _DOMUtils.#INPUT_TAGS.includes(node.tagName.toLowerCase())
+      || node.contentEditable === 'true'
+      || node.role === 'textbox'
+      || node.role === 'listbox'
+    )
+  }
+}
+
+
+
+class Store {
   constructor(key, defaultValue) {
     this.key = key
     this.defaultValue = defaultValue
@@ -24,316 +44,106 @@ class StoreManager {
   save(payload) {
     return chrome.storage.local.set({ [this.key]: payload })
   }
+
+  subscribe(callback) {
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'local' && changes[this.key]) {
+        callback(changes[this.key].newValue)
+      }
+    })
+  }
 }
 
-const isNumberBetweenEquals = (number, min, max) => {
-  return number >= min && number <= max;
-};
 
-const CODE_MARKUP_TAGS = ['pre', 'code']
-const IGNORED_TAGS = [...CODE_MARKUP_TAGS, 'script', 'style', 'svg', 'head']
 
-const isIgnored = (node) => (
-  (node.nodeType === Node.TEXT_NODE || IGNORED_TAGS.includes(node.tagName.toLowerCase()))
-  || isInputNode(node)
-  || node.id === 'pll-tooltip'
-)
+class _MediaManager {
+  static getVideoElements = () => document.querySelectorAll('video')
+  static getPlayingVideoElements = () => [..._MediaManager.getVideoElements()].filter((el) => !el.paused)
+  static getAudioElements = () => document.querySelectorAll('audio')
+  static getPlayingAudioElements = () => [..._MediaManager.getAudioElements()].filter((el) => !el.paused)
+}
 
-const isNumeric = (str) => /^\d+$/.test(str)
-
-const createMatchRegExp = (word) => (
-  isNumeric(word)
-    ? new RegExp(word, 'm')
-    : new RegExp(`(?<!\\w)` + word + `[sиы]?(?!\\w)`, 'im')
-)
-
-const matches = (node, word) => node.textContent.match(createMatchRegExp(word))
-
-const getVideoElements = () => document.querySelectorAll('video')
-const getPlayingVideoElements = () => [...getVideoElements()].filter((el) => !el.paused)
-const getAudioElements = () => document.querySelectorAll('audio')
-const getPlayingAudioElements = () => [...getAudioElements()].filter((el) => !el.paused)
-
-class MediaVolumeLower {
-  lowerValue
-  loweredCollection = new Map()
+class MediaVolumeLower extends _MediaManager {
+  #lowerValue
+  #loweredCollection = new Map()
 
   constructor(lowerValue) {
-    this.lowerValue = lowerValue
+    super()
+    this.#lowerValue = lowerValue
   }
 
   #lowerIfNeeded($el) {
-    if ($el.volume > this.lowerValue) {
-      this.loweredCollection.set($el, $el.volume)
-      $el.volume = this.lowerValue
+    if ($el.volume > this.#lowerValue) {
+      this.#loweredCollection.set($el, $el.volume)
+      $el.volume = this.#lowerValue
     }
   }
 
   lower() {
-    for (const $el of getPlayingAudioElements()) {
+    for (const $el of MediaVolumeLower.getPlayingAudioElements()) {
       this.#lowerIfNeeded($el)
     }
-    for (const $el of getPlayingVideoElements()) {
+    for (const $el of MediaVolumeLower.getPlayingVideoElements()) {
       this.#lowerIfNeeded($el)
     }
   }
 
   higher() {
-    for (const [$element, initialVolume] of this.loweredCollection) {
+    for (const [$element, initialVolume] of this.#loweredCollection) {
       $element.volume = initialVolume
     }
   }
 }
 
-class MediaPauser {
-  affectedCollection = []
+class MediaPauser extends _MediaManager {
+  #affectedCollection = []
 
   #pauseIfNeeded($el) {
     if (!$el.paused) {
-      this.affectedCollection.push($el)
+      this.#affectedCollection.push($el)
       $el.pause()
     }
   }
 
   pause() {
-    for (const $el of getPlayingAudioElements()) {
+    for (const $el of MediaPauser.getPlayingAudioElements()) {
       this.#pauseIfNeeded($el)
     }
-    for (const $el of getPlayingVideoElements()) {
+    for (const $el of MediaPauser.getPlayingVideoElements()) {
       this.#pauseIfNeeded($el)
     }
   }
 
   play() {
-    for (const $element of this.affectedCollection) {
+    for (const $element of this.#affectedCollection) {
       $element.play()
     }
   }
 }
 
-const audioVolumeLower = new MediaVolumeLower(0.6)
-const mediaPauser = new MediaPauser()
 
-const utterThis = new SpeechSynthesisUtterance()
-let utterThisLastNode = null
 
-const onFinished = () => {
-  utterThisLastNode = null
-  audioVolumeLower.higher()
-  mediaPauser.play()
-}
+class Tooltip {
+  static tooltipId = 'pll-tooltip'
 
-utterThis.lang = TRANSLATION_LANG
-utterThis.rate = 0.7
-utterThis.onend = onFinished
-utterThis.onpause = onFinished
-utterThis.onstart = () => {
-  audioVolumeLower.lower()
-  mediaPauser.pause()
-}
+  static #$tooltip
+  static #$tooltipContent
 
-const showTooltip = (content, x, y) => {
-  const $tooltip = document.getElementById('pll-tooltip')
-  $tooltip.style.left = x + 'px'
-  $tooltip.style.top = (y - 16) + 'px'
+  static show(content, x, y) {
+    Tooltip.#$tooltip.style.left = x + 'px'
+    Tooltip.#$tooltip.style.top = (y - 16) + 'px'
 
-  const $tooltipContent = $tooltip.querySelector('.pll-tooltip-content')
-  $tooltipContent.innerHTML = content
-}
-
-const hideTooltip = () => {
-  const $tooltip = document.getElementById('pll-tooltip')
-  $tooltip.style.left = ''
-}
-
-function replaceNew_needs_refactoring_has_exceptions(element, original, translation) {
-  try {
-    if (!element) {
-      return
-    }
-
-    const regex = createMatchRegExp(original)
-
-    var getNodes = function () {
-      var nodes = [],
-        offset = 0,
-        node,
-        nodeIterator = document.createNodeIterator(element, NodeFilter.SHOW_TEXT, null, false)
-
-      while (node = nodeIterator.nextNode()) {
-        nodes.push({
-          textNode: node,
-          start: offset,
-          length: node.nodeValue.length
-        })
-        offset += node.nodeValue.length
-      }
-      return nodes
-    }
-
-    var nodes = getNodes()
-    if (!nodes.length)
-      return
-
-    var text = ''
-    for (var i = 0; i < nodes.length; ++i)
-      text += nodes[i].textNode.nodeValue
-
-    let match
-    while (match = text.match(regex)) {
-      // Prevent empty matches causing infinite loops
-      if (!match[0].length) {
-        continue
-      }
-
-      // Find the start and end text node
-      var startNode = null, endNode = null
-      for (i = 0; i < nodes.length; ++i) {
-        var node = nodes[i]
-
-        if (node.start + node.length <= match.index)
-          continue
-
-        if (!startNode)
-          startNode = node
-
-        if (node.start + node.length >= match.index + match[0].length) {
-          endNode = node
-          break
-        }
-      }
-
-      var range = document.createRange()
-      range.setStart(startNode.textNode, match.index - startNode.start)
-      range.setEnd(endNode.textNode, match.index + match[0].length - endNode.start)
-      var spanNode = document.createElement('span')
-
-      const $fragment = new DocumentFragment()
-      $fragment.append(translation)
-      range.extractContents()
-      spanNode.appendChild($fragment)
-
-      spanNode.addEventListener('mouseover', function (event) {
-        utterThis.text = this.textContent
-        speechSynthesis.cancel()
-        speechSynthesis.speak(utterThis)
-        utterThisLastNode = this
-        const rect = this.getBoundingClientRect()
-        showTooltip(original, rect.right - rect.width / 2, rect.top)
-      })
-      spanNode.addEventListener('mouseout', function () {
-        if (utterThisLastNode === this) {
-          speechSynthesis.pause()
-        }
-        hideTooltip()
-      })
-
-      range.insertNode(spanNode)
-
-      nodes = getNodes()
-      text = ''
-      for (var i = 0; i < nodes.length; ++i)
-        text += nodes[i].textNode.nodeValue
-
-    }
-  } catch (e) {
-    console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
-      original,
-      elementTextContent: element?.textContent
-    })
-    console.log(e)
-  }
-}
-
-const replace = (node, original, translation) => {
-  return replaceNew_needs_refactoring_has_exceptions(node.parentNode, original, translation)
-}
-
-const findTextNodesByWord = (word, rootNode) => {
-  if (rootNode.nodeType === Node.TEXT_NODE) {
-    return matches(rootNode, word) ? [rootNode] : []
+    Tooltip.#$tooltipContent.innerHTML = content
   }
 
-  let queue = [rootNode], curr
-  const nodes = []
-
-  while (curr = queue.pop()) {
-    if (curr.nodeType !== Node.ELEMENT_NODE && curr.nodeType !== Node.TEXT_NODE) {
-      continue
-    }
-
-    if (curr.nodeType !== Node.TEXT_NODE && isIgnored(curr)) {
-      continue
-    }
-
-    for (const childNode of curr.childNodes) {
-
-      if (childNode.nodeType === Node.TEXT_NODE) {
-        if (matches(childNode, word)) {
-          nodes.push(childNode)
-        }
-      } else if (childNode.nodeType === Node.ELEMENT_NODE) {
-        // DON'T match for text on this level!
-        // Because it brokes the next case:
-        // <a>Inline elements one by one in ONE line</a><span>without spaces</span>
-
-        queue.push(childNode)
-      }
-
-    }
+  static hide() {
+    Tooltip.#$tooltip = document.getElementById('pll-tooltip')
+    Tooltip.#$tooltip.style.left = ''
   }
 
-  return nodes
-}
-
-const isInputNode = (node) => {
-  return (
-    INPUT_TAGS.includes(node.tagName.toLowerCase())
-    || node.contentEditable === 'true'
-    || node.role === 'textbox'
-    || node.role === 'listbox'
-  )
-}
-
-function hasIgnoredParent(node) {
-  let parent = node.parentNode
-  while (parent !== null) {
-    if (isIgnored(parent)) {
-      return true
-    }
-    parent = parent.parentElement
-  }
-  return false
-}
-
-const INPUT_TAGS = ['textarea', 'input', 'select']
-
-const replaceWords = (dictionary, config, rootNode) => {
-
-  for (let { original, translation } of dictionary) {
-    const nodesWithWord = findTextNodesByWord(original, rootNode)
-
-    for (const node of nodesWithWord) {
-      if (!hasIgnoredParent(node)) {
-        replace(node, original, translation)
-        if (rootNode.parentNode && rootNode.parentNode !== document) {
-          rootNode = rootNode.parentNode
-        }
-      }
-    }
-  }
-
-}
-
-const MutationObserver = window.MutationObserver || window.WebKitMutationObserver
-
-function startObserving(observer) {
-  observer.observe(document.body, { subtree: true, childList: true, characterData: true, })
-}
-
-const injectStyles = () => {
-  const $style = document.createElement('style')
-  $style.innerHTML = `
+  static #injectStyles() {
+    const $style = document.createElement('style')
+    $style.innerHTML = `
       .pll-tooltip {
           z-index: 9999999;
           position: fixed;
@@ -379,7 +189,7 @@ const injectStyles = () => {
   border-left: 5px solid transparent;
   font-size: 0;
   line-height: 0;
-  animation: bounce 0.5s ease infinite;
+  animation: bounce 0.5s ease infinite forwards;
 }
 @keyframes bounce {
   0% {
@@ -407,22 +217,281 @@ const injectStyles = () => {
 }
 
 `
-  document.head.appendChild($style)
-}
+    document.head.appendChild($style)
+  }
 
-const injectHTML = () => {
-  const $tooltip = document.createElement('div')
-  $tooltip.id = 'pll-tooltip'
-  $tooltip.classList.add('pll-tooltip')
-  $tooltip.innerHTML = `<div class="pll-tooltip-arrow"></div>
+  static #injectHTML() {
+    const $tooltip = document.createElement('div')
+
+    $tooltip.id = Tooltip.tooltipId
+    $tooltip.classList.add('pll-tooltip')
+    $tooltip.innerHTML = `<div class="pll-tooltip-arrow"></div>
         <div class="pll-tooltip-content"></div>`
-  document.body.appendChild($tooltip)
+
+    document.body.appendChild($tooltip)
+
+
+    Tooltip.#$tooltip = document.getElementById($tooltip)
+    Tooltip.#$tooltipContent = $tooltip.querySelector('.pll-tooltip-content')
+  }
+
+  static inject() {
+    Tooltip.#injectHTML()
+    Tooltip.#injectStyles()
+  }
 }
 
-const injectTooltip = () => {
-  injectHTML()
-  injectStyles()
+
+// TODO: Refactor
+const audioVolumeLower = new MediaVolumeLower(0.6)
+const mediaPauser = new MediaPauser()
+
+const utterThis = new SpeechSynthesisUtterance()
+let utterThisLastNode = null
+
+const onFinished = () => {
+  utterThisLastNode = null
+  audioVolumeLower.higher()
+  mediaPauser.play()
 }
+
+utterThis.lang = TRANSLATION_LANG
+utterThis.rate = 0.7
+utterThis.onend = onFinished
+utterThis.onpause = onFinished
+utterThis.onstart = () => {
+  audioVolumeLower.lower()
+  mediaPauser.pause()
+}
+
+
+class _Replacer {
+  static CODE_MARKUP_TAGS = ['pre', 'code']
+  static IGNORED_TAGS = [..._Replacer.CODE_MARKUP_TAGS, 'script', 'style', 'svg', 'head']
+
+  static #isIgnored = (node) => (
+    (node.nodeType === Node.TEXT_NODE || _Replacer.IGNORED_TAGS.includes(node.tagName.toLowerCase()))
+    || _DOMUtils.isInputNode(node)
+    || node.id === Tooltip.tooltipId
+  )
+
+  static #createMatchRegExp = (word) => (
+    _NumberUtils.isNumeric(word)
+      ? new RegExp(word, 'm')
+      : new RegExp(`(?<!\\w)` + word + `[sиы]?(?!\\w)`, 'im')
+  )
+
+  static #matches = (node, word) => !!node.textContent.match(_Replacer.#createMatchRegExp(word))
+
+  static #hasIgnoredParent(node) {
+    let parent = node.parentNode
+    while (parent !== null) {
+      if (_Replacer.#isIgnored(parent)) {
+        return true
+      }
+      parent = parent.parentElement
+    }
+    return false
+  }
+
+  static #replaceNew_needs_refactoring_has_exceptions(element, original, translation) {
+    try {
+      if (!element) {
+        return
+      }
+
+      const regex = _Replacer.#createMatchRegExp(original)
+
+      var getNodes = function () {
+        var nodes = [],
+          offset = 0,
+          node,
+          nodeIterator = document.createNodeIterator(element, NodeFilter.SHOW_TEXT, null, false)
+
+        while (node = nodeIterator.nextNode()) {
+          nodes.push({
+            textNode: node,
+            start: offset,
+            length: node.nodeValue.length
+          })
+          offset += node.nodeValue.length
+        }
+        return nodes
+      }
+
+      var nodes = getNodes()
+      if (!nodes.length)
+        return
+
+      var text = ''
+      for (var i = 0; i < nodes.length; ++i)
+        text += nodes[i].textNode.nodeValue
+
+      let match
+      while (match = text.match(regex)) {
+        // Prevent empty matches causing infinite loops
+        if (!match[0].length) {
+          continue
+        }
+
+        // Find the start and end text node
+        var startNode = null, endNode = null
+        for (i = 0; i < nodes.length; ++i) {
+          var node = nodes[i]
+
+          if (node.start + node.length <= match.index)
+            continue
+
+          if (!startNode)
+            startNode = node
+
+          if (node.start + node.length >= match.index + match[0].length) {
+            endNode = node
+            break
+          }
+        }
+
+        var range = document.createRange()
+        range.setStart(startNode.textNode, match.index - startNode.start)
+        range.setEnd(endNode.textNode, match.index + match[0].length - endNode.start)
+        var spanNode = document.createElement('span')
+
+        const $fragment = new DocumentFragment()
+        $fragment.append(translation)
+        range.extractContents()
+        spanNode.appendChild($fragment)
+
+        spanNode.addEventListener('mouseover', function (event) {
+          utterThis.text = this.textContent
+          speechSynthesis.cancel()
+          speechSynthesis.speak(utterThis)
+          utterThisLastNode = this
+          const rect = this.getBoundingClientRect()
+          Tooltip.show(original, rect.right - rect.width / 2, rect.top)
+        })
+        spanNode.addEventListener('mouseout', function () {
+          if (utterThisLastNode === this) {
+            speechSynthesis.pause()
+          }
+          Tooltip.hide()
+        })
+
+        range.insertNode(spanNode)
+
+        nodes = getNodes()
+        text = ''
+        for (var i = 0; i < nodes.length; ++i)
+          text += nodes[i].textNode.nodeValue
+
+      }
+    } catch (e) {
+      console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
+        original,
+        elementTextContent: element?.textContent
+      })
+      console.log(e)
+    }
+  }
+
+  static #replace (node, original, translation) {
+    return this.#replaceNew_needs_refactoring_has_exceptions(node.parentNode, original, translation)
+  }
+
+  static #findTextNodesByWord (word, rootNode) {
+    if (rootNode.nodeType === Node.TEXT_NODE) {
+      return _Replacer.#matches(rootNode, word) ? [rootNode] : []
+    }
+
+    let queue = [rootNode], curr
+    const nodes = []
+
+    while (curr = queue.pop()) {
+      if (curr.nodeType !== Node.ELEMENT_NODE && curr.nodeType !== Node.TEXT_NODE) {
+        continue
+      }
+
+      if (curr.nodeType !== Node.TEXT_NODE && _Replacer.#isIgnored(curr)) {
+        continue
+      }
+
+      for (const childNode of curr.childNodes) {
+
+        if (childNode.nodeType === Node.TEXT_NODE) {
+          if (_Replacer.#matches(childNode, word)) {
+            nodes.push(childNode)
+          }
+        } else if (childNode.nodeType === Node.ELEMENT_NODE) {
+          // DON'T match for text on this level!
+          // Because it brokes the next case:
+          // <a>Inline elements one by one in ONE line</a><span>without spaces</span>
+
+          queue.push(childNode)
+        }
+
+      }
+    }
+
+    return nodes
+  }
+
+  static replaceWords (dictionary, rootNode) {
+
+    for (let { original, translation } of dictionary) {
+      const nodesWithWord = _Replacer.#findTextNodesByWord(original, rootNode)
+
+      for (const node of nodesWithWord) {
+        if (!_Replacer.#hasIgnoredParent(node)) {
+          _Replacer.#replace(node, original, translation)
+          if (rootNode.parentNode && rootNode.parentNode !== document) {
+            rootNode = rootNode.parentNode
+          }
+        }
+      }
+    }
+
+  }
+}
+
+class DOMChangesObserverReplacer extends _Replacer {
+  static #MutationObserver = window.MutationObserver || window.WebKitMutationObserver
+  static #dictionary
+  static #observer = new DOMChangesObserverReplacer.#MutationObserver(function (mutations) {
+    // To prevent an infinite loop after replaced the text, because it'd be a mutation.
+    // Thanks to https://github.com/marcioggs/text-changer-chrome-extension/blob/master/scripts/changeText.js#L61
+    DOMChangesObserverReplacer.#observer.disconnect()
+
+    mutations.forEach((mutation) => {
+      if (mutation.type === 'childList') {
+        for (const node of mutation.addedNodes) {
+          _Replacer.replaceWords(DOMChangesObserverReplacer.#dictionary, node)
+        }
+      } else {
+        _Replacer.replaceWords(DOMChangesObserverReplacer.#dictionary, mutation.target)
+      }
+    })
+
+    DOMChangesObserverReplacer.#startObserving(DOMChangesObserverReplacer.#observer)
+  })
+
+  static #startObserving = (observer) => {
+    observer.observe(document.body, { subtree: true, childList: true, characterData: true, })
+  }
+
+  static setDictionary(dictionary) {
+    DOMChangesObserverReplacer.#dictionary = dictionary
+    DOMChangesObserverReplacer.replaceWords(DOMChangesObserverReplacer.#dictionary, document.body)
+  }
+
+  static enable(dictionary) {
+    if (dictionary) {
+      DOMChangesObserverReplacer.setDictionary(dictionary)
+    }
+
+    DOMChangesObserverReplacer.#startObserving(DOMChangesObserverReplacer.#observer)
+  }
+}
+
+
 
 class YoutubeSubtitlesSpeech {
   static #scriptInjected = false
@@ -580,65 +649,53 @@ class YoutubeSubtitlesSpeech {
 
 
 (async () => {
-  injectTooltip()
+  const dictionaryStoreManager = new Store('dictionary', SAMPLE_DATA)
 
-  const dictionaryStoreManager = new StoreManager('dictionary', SAMPLE_DATA)
-  const configStoreManager = new StoreManager('config', {
-    replaceInputValues: false,
+  const configStoreManager = new Store('config', {
+    replaceON: false,
+    youtubeAudioReplaceON: false,
   })
 
-  let dataLatest = {
+  const state = {
     dictionary: await dictionaryStoreManager.load(),
     config: await configStoreManager.load(),
   }
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-    console.table(message)
+  Tooltip.inject()
 
+  YoutubeSubtitlesSpeech.enable(state.dictionary)
+  DOMChangesObserverReplacer.enable(state.dictionary)
+
+  dictionaryStoreManager.subscribe((dictionary) => {
+    state.dictionary = dictionary
+
+    DOMChangesObserverReplacer.setDictionary(dictionary)
+
+    YoutubeSubtitlesSpeech.setDictionaryMap(
+      dictionary.reduce((acc, { original, translation }) => {
+        acc[original] = translation
+        return acc
+      }, {})
+    )
+  })
+
+  configStoreManager.subscribe((config) => {
+    state.config = config
+  })
+
+  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
-      case 'ping': {
-        sendResponse(true)
-        break
-      }
       case 'get-data': {
-        sendResponse(dataLatest)
+        sendResponse(state)
         break
       }
       case 'set-data': {
         const { dictionary, config } = message.data
         dictionaryStoreManager.save(dictionary)
         configStoreManager.save(config)
-        dataLatest = message.data
-        replaceWords(dictionary, config)
         sendResponse(true)
         break
       }
     }
   })
-
-  replaceWords(dataLatest.dictionary, dataLatest.config, document.body)
-
-  const observer = new MutationObserver(function (mutations) {
-    // To prevent an infinite loop after replaced the text, because it'd be a mutation.
-    // Thanks to https://github.com/marcioggs/text-changer-chrome-extension/blob/master/scripts/changeText.js#L61
-    observer.disconnect()
-
-    mutations.forEach((mutation) => {
-      if (mutation.type === 'childList') {
-        for (const node of mutation.addedNodes) {
-          replaceWords(dataLatest.dictionary, dataLatest.config, node)
-        }
-      } else {
-        replaceWords(dataLatest.dictionary, dataLatest.config, mutation.target)
-      }
-    })
-
-    startObserving(observer)
-  })
-
-  startObserving(observer)
-
-  if (false) {
-    experimental_feature_speakSubtitlesTranslatedWords();
-  }
 })()
