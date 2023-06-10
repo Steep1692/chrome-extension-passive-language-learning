@@ -424,107 +424,159 @@ const injectTooltip = () => {
   injectStyles()
 }
 
-const experimental_feature_speakSubtitlesTranslatedWords = async () => {
-  const dictionaryMap = dataLatest.dictionary.reduce((acc, { original, translation }) => {
-    acc[original] = translation
-    return acc
-  }, {})
+class YoutubeSubtitlesSpeech {
+  static #scriptInjected = false
+  static #enabled = false
+  static #segments
+  static #dictionaryMap
+  static #$player
 
-  const videoSubtitlesSegments = await fetch("\n" +
-    "https://www.youtube.com/api/timedtext?v=06sDgp3wZUc&caps=asr&opi=112496729&xoaf=5&hl=en&ip=0.0.0.0&ipbits=0&expire=1686358692&sparams=ip%2Cipbits%2Cexpire%2Cv%2Ccaps%2Copi%2Cxoaf&signature=AB9096C5C7FB8E6AB447F59669274454E6A4882E.454C73185D3CCB253365C067A60668007FBB3899&key=yt8&kind=asr&lang=en&fmt=json3&xorb=2&xobt=3&xovt=3&cbrand=apple&cbr=Chrome&cbrver=114.0.0.0&c=WEB&cver=2.20230608.02.00&cplayer=UNIPLAYER&cos=Macintosh&cosver=10_15_7&cplatform=DESKTOP")
-    .then(r => r.json())
-    .then((result) => {
-      const out = [];
+  static scriptId = 'pll-youtube-api-exposer-script'
 
-      let event, nextEvent;
-      for (let i = 0; i < result.events.length; i++) {
-        event = result.events[i]
+  static #normalizeYoutubeCaptions = (captionEvents) => {
+    const out = []
 
-        if (!event.segs?.length) {
+    let event, nextEvent
+    for (let i = 0; i < captionEvents.length; i++) {
+      event = captionEvents[i]
+
+      if (!event.segs?.length) {
+        continue
+      }
+
+      nextEvent = captionEvents[i + 1]
+
+      const start = event.tStartMs
+      const end = nextEvent?.tStartMs !== undefined ? nextEvent.tStartMs : (event.tStartMs + event.dDurationMs)
+
+      let segment, nextSegment
+      for (let j = 0; j < event.segs.length; j++) {
+        segment = event.segs[j]
+
+        if (!segment.utf8) {
           continue
         }
 
-        nextEvent = result.events[i + 1]
+        nextSegment = event.segs[j + 1]
 
-        const start = event.tStartMs;
-        const end = nextEvent?.tStartMs !== undefined ? nextEvent.tStartMs : (event.tStartMs + event.dDurationMs);
-
-        let segment, nextSegment
-        for (let j = 0; j < event.segs.length; j++) {
-          segment = event.segs[j]
-
-          if (!segment.utf8) {
-            continue
-          }
-
-          nextSegment = event.segs[j + 1]
-
-          out.push({
-            text: segment.utf8,
-            start: start + (segment.tOffsetMs ?? 0),
-            end: nextSegment?.tOffsetMs !== undefined ? (start + nextSegment?.tOffsetMs) : end,
-          })
-        }
+        out.push({
+          text: segment.utf8,
+          start: start + (segment.tOffsetMs ?? 0),
+          end: nextSegment?.tOffsetMs !== undefined ? (start + nextSegment?.tOffsetMs) : end,
+        })
       }
+    }
 
-      return out
-    })
+    return out
+  }
 
-  const mediaVolumeLower = new MediaVolumeLower(0)
+  static #handleNewURL = async (captionUrl) => {
+    if (!captionUrl) {
+      return
+    }
 
-  const utterThis = new SpeechSynthesisUtterance(this.textContent)
+    let urlWithRightLang = captionUrl.replace(/&lang=[^&]+/, `&lang=${ORIGINAL_LANG}`) // not sure if it's needed
+    urlWithRightLang += '&fmt=json3'
 
-  utterThis.lang = TRANSLATION_LANG
-  utterThis.rate = 1.35
-  utterThis.onend = () => mediaVolumeLower.higher()
-  utterThis.onpause = () => mediaVolumeLower.higher()
-  utterThis.onboundary = () => mediaVolumeLower.lower()
+    YoutubeSubtitlesSpeech.#segments = await fetch(urlWithRightLang)
+      .then(r => r.json())
+      .then((result) => YoutubeSubtitlesSpeech.#normalizeYoutubeCaptions(result.events))
 
-  for (const $video of getVideoElements()) {
-    let playing = !$video.paused
+    YoutubeSubtitlesSpeech.#$player = _MediaManager.getVideoElements()?.[0]
+  }
 
+  static #onEngine = () => {
     let lastText
     const frame = () => {
-      const currentTimeMs = $video.currentTime * 1000 + 180
+      const playing = YoutubeSubtitlesSpeech.#$player && !YoutubeSubtitlesSpeech.#$player.paused
 
-      const segment = videoSubtitlesSegments.find(
-        (s) => isNumberBetweenEquals(currentTimeMs, s.start, s.end)
-      )
-      const text = segment?.text
+      if (playing && YoutubeSubtitlesSpeech.#segments?.length) {
+        const currentTimeMs = $player.currentTime * 1000 + 280
 
-      if (text && lastText !== text) {
-        lastText = text
+        const segment = YoutubeSubtitlesSpeech.#segments.find(
+          (s) => _NumberUtils.isNumberBetweenEquals(currentTimeMs, s.start, s.end)
+        )
+        const text = segment?.text
 
-        const textNormalized = segment?.text.trim().toLowerCase().replace(/[sиы]$/, '')
-        const translation = dictionaryMap[textNormalized]
+        if (text && lastText !== text) {
+          lastText = text
 
-        if (translation) {
-          speechSynthesis.cancel()
-          console.log('speaking: ', text, ' as :', translation)
-          utterThis.text = translation
-          speechSynthesis.speak(utterThis)
+          const textNormalized = segment?.text.trim().toLowerCase().replace(/[sиы]$/, '')
+          const translation = YoutubeSubtitlesSpeech.#dictionaryMap[textNormalized]
+
+          if (translation) {
+            speechSynthesis.cancel()
+            console.log('speaking: ', text, ' as :', translation)
+            utterThis.text = translation
+            speechSynthesis.speak(utterThis)
+          }
         }
       }
 
-      if (playing) {
+      if (YoutubeSubtitlesSpeech.#enabled) {
         requestAnimationFrame(frame)
       }
     }
 
-    $video.addEventListener('play', () => {
-      playing = true
+    if (YoutubeSubtitlesSpeech.#enabled) {
       requestAnimationFrame(frame)
-    })
-    $video.addEventListener('pause', () => {
-      playing = false
-    })
-    $video.addEventListener('ended', () => {
-      playing = false
-    })
-
-    requestAnimationFrame(frame)
+    }
   }
-};
+
+  static #injectYoutubeAPIExposer = () => {
+    const n = document.createElement('script')
+    n.id = YoutubeSubtitlesSpeech.scriptId
+    document.documentElement.append(n)
+    n.src = chrome.runtime.getURL('webpage.bundle.js')
+    n.defer = true
+    YoutubeSubtitlesSpeech.#scriptInjected = true
+  }
+
+  static #messageHandler = (e) => {
+    if (e.data.type === 'pll-update-subtitles') {
+      if (e.data.data) {
+        YoutubeSubtitlesSpeech.#handleNewURL(e.data.data)
+      }
+    }
+  }
+
+  static #onListenMessages = () => {
+    window.addEventListener('message', YoutubeSubtitlesSpeech.#messageHandler)
+  }
+
+  static #offListenMessages = () => {
+    window.removeEventListener('message', YoutubeSubtitlesSpeech.#messageHandler)
+  }
+
+  static enable(dictionaryMap) {
+    if (dictionaryMap) {
+      YoutubeSubtitlesSpeech.setDictionaryMap(dictionaryMap)
+    }
+
+    if (!YoutubeSubtitlesSpeech.#enabled) {
+      if (!YoutubeSubtitlesSpeech.#scriptInjected) {
+        YoutubeSubtitlesSpeech.#injectYoutubeAPIExposer()
+      }
+
+      YoutubeSubtitlesSpeech.#onListenMessages()
+      YoutubeSubtitlesSpeech.#enabled = true
+
+      YoutubeSubtitlesSpeech.#onEngine()
+    }
+  }
+
+  static disable() {
+    if (YoutubeSubtitlesSpeech.#enabled) {
+      YoutubeSubtitlesSpeech.#offListenMessages()
+      YoutubeSubtitlesSpeech.#enabled = false
+    }
+  }
+
+  static setDictionaryMap(dictionaryMap) {
+    YoutubeSubtitlesSpeech.#dictionaryMap = dictionaryMap
+  }
+}
+
 
 
 (async () => {
