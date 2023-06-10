@@ -125,6 +125,8 @@ class MediaPauser extends _MediaManager {
 
 class Tooltip {
   static tooltipId = 'pll-tooltip'
+  static #contentClassName = 'pll-tooltip-content'
+  static #arrowClassName = 'pll-tooltip-arrow'
 
   static #$tooltip
   static #$tooltipContent
@@ -137,20 +139,19 @@ class Tooltip {
   }
 
   static hide() {
-    Tooltip.#$tooltip = document.getElementById('pll-tooltip')
     Tooltip.#$tooltip.style.left = ''
   }
 
   static #injectStyles() {
     const $style = document.createElement('style')
     $style.innerHTML = `
-      .pll-tooltip {
+      #${Tooltip.tooltipId} {
           z-index: 9999999;
           position: fixed;
           left: -200px;
         }
         
-      .pll-tooltip-content {
+      .${Tooltip.#contentClassName} {
         position: absolute;
         top: 0;
         left: 50%;
@@ -176,7 +177,7 @@ class Tooltip {
         animation: gradient 4s ease infinite forwards;
   }
 
-.pll-tooltip-arrow {
+.${Tooltip.#arrowClassName} {
   position: absolute;
   top: 0;
   left: 50%;
@@ -225,14 +226,13 @@ class Tooltip {
 
     $tooltip.id = Tooltip.tooltipId
     $tooltip.classList.add('pll-tooltip')
-    $tooltip.innerHTML = `<div class="pll-tooltip-arrow"></div>
-        <div class="pll-tooltip-content"></div>`
+    $tooltip.innerHTML = `<div class="${Tooltip.#arrowClassName}"></div>
+        <div class="${Tooltip.#contentClassName}"></div>`
 
     document.body.appendChild($tooltip)
 
-
-    Tooltip.#$tooltip = document.getElementById($tooltip)
-    Tooltip.#$tooltipContent = $tooltip.querySelector('.pll-tooltip-content')
+    Tooltip.#$tooltip = $tooltip
+    Tooltip.#$tooltipContent = $tooltip.querySelector('.' + Tooltip.#contentClassName)
   }
 
   static inject() {
