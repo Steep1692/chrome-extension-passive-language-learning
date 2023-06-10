@@ -493,6 +493,18 @@ class DOMChangesObserverReplacer extends _Replacer {
 
 
 
+const mediaVolumeLower = new MediaVolumeLower(0.6)
+
+const utterThis2 = new SpeechSynthesisUtterance(this.textContent)
+
+utterThis2.lang = TRANSLATION_LANG
+utterThis2.rate = 0.8
+utterThis2.onend = () => mediaVolumeLower.higher()
+utterThis2.onpause = () => mediaVolumeLower.higher()
+// utterThis2.onboundary = () => mediaVolumeLower.lower()
+utterThis2.onstart = () => mediaVolumeLower.lower()
+
+
 class YoutubeSubtitlesSpeech {
   static #scriptInjected = false
   static #enabled = false
@@ -555,20 +567,20 @@ class YoutubeSubtitlesSpeech {
   }
 
   static #onEngine = () => {
-    let lastText
+    let lastSegment
     const frame = () => {
       const playing = YoutubeSubtitlesSpeech.#$player && !YoutubeSubtitlesSpeech.#$player.paused
 
       if (playing && YoutubeSubtitlesSpeech.#segments?.length) {
-        const currentTimeMs = $player.currentTime * 1000 + 280
+        const currentTimeMs = YoutubeSubtitlesSpeech.#$player.currentTime * 1000 + 280
 
         const segment = YoutubeSubtitlesSpeech.#segments.find(
           (s) => _NumberUtils.isNumberBetweenEquals(currentTimeMs, s.start, s.end)
         )
         const text = segment?.text
 
-        if (text && lastText !== text) {
-          lastText = text
+        if (lastSegment !== segment) {
+          lastSegment = segment
 
           const textNormalized = segment?.text.trim().toLowerCase().replace(/[sиы]$/, '')
           const translation = YoutubeSubtitlesSpeech.#dictionaryMap[textNormalized]
@@ -576,8 +588,8 @@ class YoutubeSubtitlesSpeech {
           if (translation) {
             speechSynthesis.cancel()
             console.log('speaking: ', text, ' as :', translation)
-            utterThis.text = translation
-            speechSynthesis.speak(utterThis)
+            utterThis2.text = translation
+            speechSynthesis.speak(utterThis2)
           }
         }
       }
@@ -617,9 +629,9 @@ class YoutubeSubtitlesSpeech {
     window.removeEventListener('message', YoutubeSubtitlesSpeech.#messageHandler)
   }
 
-  static enable(dictionaryMap) {
-    if (dictionaryMap) {
-      YoutubeSubtitlesSpeech.setDictionaryMap(dictionaryMap)
+  static enable(dictionary) {
+    if (dictionary) {
+      YoutubeSubtitlesSpeech.setDictionary(dictionary)
     }
 
     if (!YoutubeSubtitlesSpeech.#enabled) {
@@ -641,8 +653,11 @@ class YoutubeSubtitlesSpeech {
     }
   }
 
-  static setDictionaryMap(dictionaryMap) {
-    YoutubeSubtitlesSpeech.#dictionaryMap = dictionaryMap
+  static setDictionary(dictionary) {
+    YoutubeSubtitlesSpeech.#dictionaryMap = dictionary.reduce((acc, { original, translation }) => {
+      acc[original] = translation
+      return acc
+    }, {})
   }
 }
 
@@ -670,13 +685,7 @@ class YoutubeSubtitlesSpeech {
     state.dictionary = dictionary
 
     DOMChangesObserverReplacer.setDictionary(dictionary)
-
-    YoutubeSubtitlesSpeech.setDictionaryMap(
-      dictionary.reduce((acc, { original, translation }) => {
-        acc[original] = translation
-        return acc
-      }, {})
-    )
+    YoutubeSubtitlesSpeech.setDictionary(dictionary)
   })
 
   configStoreManager.subscribe((config) => {
