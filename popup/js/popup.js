@@ -72,18 +72,21 @@ const createField = ({ index, className, fieldKey, textContent }, {
     $input.classList.remove(classNameHidden)
   }
 
+  function escapeHandler(event) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      showLabel()
+      document.removeEventListener('keydown', escapeHandler)
+    }
+  }
+
   $label.addEventListener('click', function () {
     const $input = $label.nextSibling
 
     showInput()
     $input.focus()
-    document.addEventListener('keydown', function handler(event) {
-      event.preventDefault();
-      if (event.key === 'Escape') {
-        showLabel()
-        document.removeEventListener('keydown', handler)
-      }
-    })
+
+    document.addEventListener('keydown', escapeHandler)
   })
 
   const $input = document.createElement('input')
@@ -93,6 +96,8 @@ const createField = ({ index, className, fieldKey, textContent }, {
   $input.addEventListener('change', () => $input.hasChanged = true);
   $input.addEventListener('focus', () => $input.hasChanged = false);
   const onEditSuccess = () => {
+    document.removeEventListener('keydown', escapeHandler)
+
     showLabel();
 
     if ($input.hasChanged) {
