@@ -498,7 +498,7 @@ const mediaVolumeLower = new MediaVolumeLower(0.6)
 const utterThis2 = new SpeechSynthesisUtterance(this.textContent)
 
 utterThis2.lang = TRANSLATION_LANG
-utterThis2.rate = 0.8
+utterThis2.rate = 1.2
 utterThis2.onend = () => mediaVolumeLower.higher()
 utterThis2.onpause = () => mediaVolumeLower.higher()
 // utterThis2.onboundary = () => mediaVolumeLower.lower()
@@ -556,7 +556,7 @@ class YoutubeSubtitlesSpeech {
       return
     }
 
-    let urlWithRightLang = captionUrl.replace(/&lang=[^&]+/, `&lang=${ORIGINAL_LANG}`) // not sure if it's needed
+    let urlWithRightLang = captionUrl.replace(/&lang=[^&]+/, `&lang=${ORIGINAL_LANG}`)
     urlWithRightLang += '&fmt=json3'
 
     YoutubeSubtitlesSpeech.#segments = await fetch(urlWithRightLang)
