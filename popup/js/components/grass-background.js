@@ -694,7 +694,7 @@ class GrassWebComponent extends HTMLElement {
             width: 100%;
             height: 100%;
             opacity: 0.8;
-            filter: blur(4px);
+            filter: blur(6px);
         }
         #fieldCanvas {
           width: 100%;

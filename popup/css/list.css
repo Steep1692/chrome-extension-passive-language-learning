@@ -2,7 +2,7 @@
     z-index: 1;
     margin: 0 10px;
     box-sizing: border-box;
-    background-color: #fff;
+    background-color: rgba(255, 255, 255, 0.7);
     border-radius: 4px;
     box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.5);
 }
@@ -62,7 +62,7 @@
 }
 
 .todo-item.odd {
-    background-color: #eee;
+    background-color: rgba(238, 238, 238, 0.8);
 }
 
 .todo-item::marker {
@@ -108,11 +108,7 @@
     box-sizing: border-box;
     border-color: #868686;
 
-    background-color: #eee;
-}
-
-.todo-item.odd .field:hover {
-    background-color: white;
+    background-color: #fff;
 }
 
 .todo-item-input {
