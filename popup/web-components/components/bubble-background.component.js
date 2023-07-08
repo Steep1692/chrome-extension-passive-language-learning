@@ -9,7 +9,6 @@ class BubbleWebComponent extends HTMLElement {
   connectedCallback() {
     this.render()
     const appendAnimationBubbles = () => {
-      console.log(this.shadowRoot)
       const $root = this.shadowRoot.querySelector('.root')
       const $container = document.createElement('div')
 
@@ -47,7 +46,7 @@ class BubbleWebComponent extends HTMLElement {
   bottom: -1rem;
   width: 1rem;
   height: 1rem;
-  background-color: rgba(255, 255, 255, 0.5);
+  background-color: rgba(255, 255, 255, 0.6);
   border-radius: 50%;
 }
 .bottom-particles .bubble:nth-child(1) {

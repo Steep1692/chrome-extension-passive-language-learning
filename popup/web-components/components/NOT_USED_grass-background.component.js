@@ -673,6 +673,7 @@ class GrassWebComponent extends HTMLElement {
 
     const canvasElement = this.shadowRoot.getElementById('fieldCanvas')
     init(canvasElement)
+
     startAnimation()
   }
 
@@ -683,7 +684,6 @@ class GrassWebComponent extends HTMLElement {
             position: relative;
             width: 100%;
             height: 100%;
-              background: linear-gradient(0deg, rgba(0,224,255,1) 25%, rgba(249,255,0,1) 82%);
         }
         
         .background .canvas-container{
@@ -694,8 +694,28 @@ class GrassWebComponent extends HTMLElement {
             width: 100%;
             height: 100%;
             opacity: 0.8;
-            filter: blur(6px);
+            filter: blur(2px);
+            
+            background-image: url("images/bg/grass.png");
+            background-position: bottom;
+            background-size: 94% 20%;
+            background-repeat: no-repeat;
+            
+            animation: grass 3s ease-in-out infinite;
         }
+        
+        @keyframes grass {
+          0% {
+            background-position: 0 100%;
+          }
+          50% {
+            background-position: 12% 103%;
+          }
+          100% {
+            background-position: 0 100%;
+          }
+        }
+        
         #fieldCanvas {
           width: 100%;
           height: 100%;
@@ -709,7 +729,7 @@ class GrassWebComponent extends HTMLElement {
 
       <div class="background">
         <div class="canvas-container">
-          <canvas id="fieldCanvas"></canvas>
+<!--          <canvas id="fieldCanvas"></canvas>-->
         </div>
         <div class="slot"><slot></slot></div>
       </div>
