@@ -8,7 +8,10 @@ const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
   'original': 'horse', 'translation': '马'
 }, { 'original': 'small', 'translation': '小' }, { 'original': 'pig', 'translation': '猪' }]
 
-const ORIGINAL_LANG = 'en'
+const CURSE_WORDS = [
+  'попка', 'пісюн', 'цицьки',
+]
+
 const TRANSLATION_LANG = 'zh-CN'
 
 class _NumberUtils {
@@ -19,7 +22,7 @@ class _NumberUtils {
 class _DOMUtils {
   static #INPUT_TAGS = ['textarea', 'input', 'select']
 
-  static isInputNode (node) {
+  static isInputNode(node) {
     return (
       _DOMUtils.#INPUT_TAGS.includes(node.tagName.toLowerCase())
       || node.contentEditable === 'true'
@@ -29,31 +32,62 @@ class _DOMUtils {
   }
 }
 
+class _StringUtils {
+  static replaceRandomWord = (str, newWord) => {
+    const words = str.split(' ')
+    const randomIndex = Math.floor(Math.random() * words.length)
+    words[randomIndex] = newWord
+    return words.join(' ')
+  }
+}
+
+class _ArrayUtils {
+  static getRandomItem = (arr) => arr[Math.floor(Math.random() * arr.length)]
+}
 
 
 class Store {
-  constructor(key, defaultValue) {
+  constructor(key, defaultValue, { version }) {
     this.key = key
+    this.version = version
+    this.keyWithVersion = Store.getKeyWithVersion(key, version)
     this.defaultValue = defaultValue
+
+    Store.cleanPreviousVersions(key, version)
+  }
+
+  static getKeyWithVersion(key, version) {
+    return key + '_' + version
+  }
+
+  static cleanPreviousVersions(key, version) {
+    const keyWithVersion = Store.getKeyWithVersion(key, version)
+
+    return chrome.storage.local.get().then((result) => {
+      for (const resultKey in result) {
+        if (resultKey.includes(key) && resultKey !== keyWithVersion) {
+          chrome.storage.local.remove(resultKey)
+        }
+      }
+    })
   }
 
   load() {
-    return chrome.storage.local.get([this.key]).then((result) => result[this.key] ?? this.defaultValue)
+    return chrome.storage.local.get([this.keyWithVersion]).then((result) => result[this.keyWithVersion] ?? this.defaultValue)
   }
 
   save(payload) {
-    return chrome.storage.local.set({ [this.key]: payload })
+    return chrome.storage.local.set({ [this.keyWithVersion]: payload })
   }
 
   subscribe(callback) {
     chrome.storage.onChanged.addListener((changes, namespace) => {
-      if (namespace === 'local' && changes[this.key]) {
-        callback(changes[this.key].newValue)
+      if (namespace === 'local' && changes[this.keyWithVersion]) {
+        callback(changes[this.keyWithVersion].newValue)
       }
     })
   }
 }
-
 
 
 class _MediaManager {
@@ -120,7 +154,6 @@ class MediaPauser extends _MediaManager {
     }
   }
 }
-
 
 
 class Tooltip {
@@ -247,10 +280,10 @@ const audioVolumeLower = new MediaVolumeLower(0.6)
 const mediaPauser = new MediaPauser()
 
 const utterThis = new SpeechSynthesisUtterance()
-let utterThisLastNode = null
+let lastSpeakNode = null
 
 const onFinished = () => {
-  utterThisLastNode = null
+  lastSpeakNode = null
   audioVolumeLower.higher()
   mediaPauser.play()
 }
@@ -278,7 +311,7 @@ class _Replacer {
   static #createMatchRegExp = (word) => (
     _NumberUtils.isNumeric(word)
       ? new RegExp(word, 'm')
-      : new RegExp(`(?<!\\w)` + word + `[sиы]?(?!\\w)`, 'im')
+      : new RegExp(`(?<!\\w)` + word + `[sи]?(?!\\w)`, 'im')
   )
 
   static #matches = (node, word) => !!node.textContent.match(_Replacer.#createMatchRegExp(word))
@@ -361,16 +394,19 @@ class _Replacer {
         range.extractContents()
         spanNode.appendChild($fragment)
 
-        spanNode.addEventListener('mouseover', function (event) {
-          utterThis.text = this.textContent
+        spanNode.addEventListener('mouseover', (e) => {
+          // Speak
+          utterThis.text = e.currentTarget.textContent
           speechSynthesis.cancel()
           speechSynthesis.speak(utterThis)
-          utterThisLastNode = this
-          const rect = this.getBoundingClientRect()
+          lastSpeakNode = e.currentTarget
+
+          // Tooltip
+          const rect = e.currentTarget.getBoundingClientRect()
           Tooltip.show(original, rect.right - rect.width / 2, rect.top)
         })
-        spanNode.addEventListener('mouseout', function () {
-          if (utterThisLastNode === this) {
+        spanNode.addEventListener('mouseout', (e) => {
+          if (lastSpeakNode === e.currentTarget) {
             speechSynthesis.pause()
           }
           Tooltip.hide()
@@ -393,11 +429,11 @@ class _Replacer {
     }
   }
 
-  static #replace (node, original, translation) {
+  static #replace(node, original, translation) {
     return this.#replaceNew_needs_refactoring_has_exceptions(node.parentNode, original, translation)
   }
 
-  static #findTextNodesByWord (word, rootNode) {
+  static #findTextNodesByWord(word, rootNode) {
     if (rootNode.nodeType === Node.TEXT_NODE) {
       return _Replacer.#matches(rootNode, word) ? [rootNode] : []
     }
@@ -434,7 +470,7 @@ class _Replacer {
     return nodes
   }
 
-  static replaceWords (dictionary, rootNode) {
+  static replaceWords(dictionary, rootNode) {
 
     for (let { original, translation } of dictionary) {
       const nodesWithWord = _Replacer.#findTextNodesByWord(original, rootNode)
@@ -450,11 +486,13 @@ class _Replacer {
     }
 
   }
+
 }
 
 class DOMChangesObserverReplacer extends _Replacer {
   static #MutationObserver = window.MutationObserver || window.WebKitMutationObserver
   static #dictionary
+
   static #observer = new DOMChangesObserverReplacer.#MutationObserver(function (mutations) {
     // To prevent an infinite loop after replaced the text, because it'd be a mutation.
     // Thanks to https://github.com/marcioggs/text-changer-chrome-extension/blob/master/scripts/changeText.js#L61
@@ -463,10 +501,10 @@ class DOMChangesObserverReplacer extends _Replacer {
     mutations.forEach((mutation) => {
       if (mutation.type === 'childList') {
         for (const node of mutation.addedNodes) {
-          _Replacer.replaceWords(DOMChangesObserverReplacer.#dictionary, node)
+          DOMChangesObserverReplacer.replaceWords(DOMChangesObserverReplacer.#dictionary, node)
         }
       } else {
-        _Replacer.replaceWords(DOMChangesObserverReplacer.#dictionary, mutation.target)
+        DOMChangesObserverReplacer.replaceWords(DOMChangesObserverReplacer.#dictionary, mutation.target)
       }
     })
 
@@ -492,7 +530,6 @@ class DOMChangesObserverReplacer extends _Replacer {
 }
 
 
-
 const mediaVolumeLower = new MediaVolumeLower(0.6)
 
 const utterThis2 = new SpeechSynthesisUtterance(this.textContent)
@@ -511,6 +548,9 @@ class YoutubeSubtitlesSpeech {
   static #segments
   static #dictionaryMap
   static #$player
+  static #langFrom
+  static #langTo
+  static #captionUrl
 
   static scriptId = 'pll-youtube-api-exposer-script'
 
@@ -551,13 +591,15 @@ class YoutubeSubtitlesSpeech {
     return out
   }
 
-  static #handleNewURL = async (captionUrl) => {
+  static #downloadCaptions = async () => {
+    const captionUrl = YoutubeSubtitlesSpeech.#captionUrl
     if (!captionUrl) {
       return
     }
 
-    let urlWithRightLang = captionUrl.replace(/&lang=[^&]+/, `&lang=${ORIGINAL_LANG}`)
+    let urlWithRightLang = captionUrl.replace(/&lang=[^&]+/, `&lang=` + YoutubeSubtitlesSpeech.#langFrom)
     urlWithRightLang += '&fmt=json3'
+    urlWithRightLang += '&tlang=' + YoutubeSubtitlesSpeech.#langTo
 
     YoutubeSubtitlesSpeech.#segments = await fetch(urlWithRightLang)
       .then(r => r.json())
@@ -566,8 +608,10 @@ class YoutubeSubtitlesSpeech {
     YoutubeSubtitlesSpeech.#$player = _MediaManager.getVideoElements()?.[0]
   }
 
+
   static #onEngine = () => {
     let lastSegment
+
     const frame = () => {
       const playing = YoutubeSubtitlesSpeech.#$player && !YoutubeSubtitlesSpeech.#$player.paused
 
@@ -604,6 +648,46 @@ class YoutubeSubtitlesSpeech {
     }
   }
 
+  static #onEngineCurseWords = () => {
+    let lastTime
+    const CHUNK_SIZE_MS = 2000
+    const frame = () => {
+      const playing = YoutubeSubtitlesSpeech.#$player && !YoutubeSubtitlesSpeech.#$player.paused
+
+      if (playing && YoutubeSubtitlesSpeech.#segments?.length) {
+        const currentTimeMs = YoutubeSubtitlesSpeech.#$player.currentTime * 1000 + 280
+
+        const now = performance.now()
+        if (!lastTime || now - lastTime > CHUNK_SIZE_MS) {
+          lastTime = now
+
+          const segments = YoutubeSubtitlesSpeech.#segments.filter(
+            (s) => (
+              _NumberUtils.isNumberBetweenEquals(s.start, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS)
+              && _NumberUtils.isNumberBetweenEquals(s.end, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS)
+            )
+          )
+          const text = segments.map((s) => s.text).join(' ')
+
+          const textCursified = _StringUtils.replaceRandomWord(
+            text, _ArrayUtils.getRandomItem(CURSE_WORDS)
+          )
+          speechSynthesis.cancel()
+          utterThis2.text = textCursified
+          speechSynthesis.speak(utterThis2)
+        }
+      }
+
+      if (YoutubeSubtitlesSpeech.#enabled) {
+        requestAnimationFrame(frame)
+      }
+    }
+
+    if (YoutubeSubtitlesSpeech.#enabled) {
+      requestAnimationFrame(frame)
+    }
+  }
+
   static #injectYoutubeAPIExposer = () => {
     const n = document.createElement('script')
     n.id = YoutubeSubtitlesSpeech.scriptId
@@ -616,7 +700,8 @@ class YoutubeSubtitlesSpeech {
   static #messageHandler = (e) => {
     if (e.data.type === 'pll-update-subtitles') {
       if (e.data.data) {
-        YoutubeSubtitlesSpeech.#handleNewURL(e.data.data)
+        YoutubeSubtitlesSpeech.#captionUrl = e.data.data
+        YoutubeSubtitlesSpeech.#downloadCaptions()
       }
     }
   }
@@ -629,18 +714,23 @@ class YoutubeSubtitlesSpeech {
     window.removeEventListener('message', YoutubeSubtitlesSpeech.#messageHandler)
   }
 
-  static enable(dictionary) {
+  static enable(dictionary, langFrom, langTo) {
     if (dictionary) {
       YoutubeSubtitlesSpeech.setDictionary(dictionary)
     }
 
+    if (langFrom && langTo) {
+      YoutubeSubtitlesSpeech.setLangs(langFrom, langTo)
+    }
+
     if (!YoutubeSubtitlesSpeech.#enabled) {
+      YoutubeSubtitlesSpeech.#enabled = true
+
       if (!YoutubeSubtitlesSpeech.#scriptInjected) {
         YoutubeSubtitlesSpeech.#injectYoutubeAPIExposer()
       }
 
       YoutubeSubtitlesSpeech.#onListenMessages()
-      YoutubeSubtitlesSpeech.#enabled = true
 
       YoutubeSubtitlesSpeech.#onEngine()
     }
@@ -659,16 +749,37 @@ class YoutubeSubtitlesSpeech {
       return acc
     }, {})
   }
+
+  static setLangs(langFrom, langTo) {
+    YoutubeSubtitlesSpeech.#langFrom = langFrom
+    YoutubeSubtitlesSpeech.#langTo = langTo
+  }
+
+  static setLangsWithUpdate(langFrom, langTo) {
+    if (YoutubeSubtitlesSpeech.#langFrom !== langFrom || YoutubeSubtitlesSpeech.#langTo !== langTo) {
+      YoutubeSubtitlesSpeech.setLangs(langFrom, langTo)
+
+      YoutubeSubtitlesSpeech.#downloadCaptions()
+    }
+  }
 }
 
-
-
 (async () => {
-  const dictionaryStoreManager = new Store('dictionary', SAMPLE_DATA)
+  const isIgnoredOrigin = (state) => state.config.ignoredOrigins.includes(clientInfo.origin)
+  const isDisabled = (state) => state.config.disabledAtAll || isIgnoredOrigin(state)
+
+  const dictionaryStoreManager = new Store('dictionary', SAMPLE_DATA, {
+    version: '1',
+  })
 
   const configStoreManager = new Store('config', {
-    replaceON: false,
+    ignoredOrigins: [],
     youtubeAudioReplaceON: false,
+    disabledAtAll: false,
+    fromLang: 'en',
+    toLang: null,
+  }, {
+    version: '1.2',
   })
 
   const state = {
@@ -676,10 +787,18 @@ class YoutubeSubtitlesSpeech {
     config: await configStoreManager.load(),
   }
 
+  console.log(state)
+
+  const clientInfo = {
+    origin: window.location.origin,
+  }
+
   Tooltip.inject()
 
-  YoutubeSubtitlesSpeech.enable(state.dictionary)
-  DOMChangesObserverReplacer.enable(state.dictionary)
+  if (!isDisabled(state)) {
+    YoutubeSubtitlesSpeech.enable(state.dictionary, state.config.fromLang, state.config.toLang)
+    DOMChangesObserverReplacer.enable(state.dictionary)
+  }
 
   dictionaryStoreManager.subscribe((dictionary) => {
     state.dictionary = dictionary
@@ -690,12 +809,23 @@ class YoutubeSubtitlesSpeech {
 
   configStoreManager.subscribe((config) => {
     state.config = config
+
+    YoutubeSubtitlesSpeech.setLangsWithUpdate(config.fromLang, config.toLang)
+    utterThis.lang = config.toLang
+    utterThis2.lang = config.toLang
+
+    if (isDisabled(state)) {
+      window.location.reload()
+    } else {
+      YoutubeSubtitlesSpeech.enable(state.dictionary, state.config.fromLang, state.config.toLang)
+      DOMChangesObserverReplacer.enable(state.dictionary)
+    }
   })
 
   chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
       case 'get-data': {
-        sendResponse(state)
+        sendResponse({ state, clientInfo })
         break
       }
       case 'set-data': {
