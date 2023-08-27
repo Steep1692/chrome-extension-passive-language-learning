@@ -14,7 +14,6 @@
     <script src="js/lib/translator.js"></script>
     <script src="js/lib/abacus-lib.js"></script>
 
-    <script src="js/setup-screen.js"></script>
     <script src="js/popup.js"></script>
 
     <script src="web-components/components/bubble-background.component.js"></script>
@@ -23,6 +22,7 @@
     <script src="web-components/views/config/config.view.js"></script>
     <script src="web-components/views/add-form/add-form.view.js"></script>
     <script src="web-components/views/dictionary/dictionary.view.js"></script>
+    <script src="web-components/views/setup-screen/setup-screen.view.js"></script>
 
     <title>Passive Language Learning</title>
 </head>
@@ -31,32 +31,9 @@
 <pll-header></pll-header>
 
 <main>
-    <form id="screen-setup" class="screen-setup" style="display: none">
-        <h2>Setup screen</h2>
-        <p>Choose the language you want to learn:</p>
-
-        <fieldset class="setup-screen-learn-lang-row">
-            <label class="setup-screen-item">
-                <img src="images/en.png" alt="English flag">
-                <span>English</span>
-                <input name="toLang" value="en" type="radio" required checked>
-            </label>
-            <label class="setup-screen-item">
-                <img src="images/zh.png" alt="Chinese flag">
-                <span>Chinese</span>
-                <input name="toLang" value="zh" type="radio">
-            </label>
-        </fieldset>
-
-        <button class="button-submit" type="submit">
-            Start learning
-            &nbsp;
-            <span class="emoji-wrap">
-                <span class="emoji-valid">🐻</span>
-                <span class="emoji-active">👍</span>
-            </span>
-        </button>
-    </form>
+    <div id="screen-setup" style="display: none">
+        <pll-setup-screen></pll-setup-screen>
+    </div>
 
     <div id="screen-main" class="screen-main" style="display: none">
         <pll-config></pll-config>

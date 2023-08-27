@@ -38,7 +38,7 @@
         Store.subscribeToState((state, prevState, clarifications) => {
           if (clarifications.init) {
             this.render(typeof renderArgs === 'function' ? renderArgs.call(this, state) : (renderArgs ?? state))
-            this.$elements = defineElements?.call(this)
+            this.elements = defineElements?.call(this)
             dontShowHtmlUntilAllCssLoaded(this.shadowRoot, styleFilesURLs)
             onAfterFirstRender?.call(this, state, prevState)
           }
@@ -47,8 +47,8 @@
 
           if (changesOnStateChange) {
             for (const change of changesOnStateChange) {
-              if (change.when(state, prevState)) {
-                change.do.call(this, this.$elements, state, prevState)
+              if (clarifications.init || change.when(state, prevState)) {
+                change.do.call(this, this.elements, state, prevState)
               }
             }
           }

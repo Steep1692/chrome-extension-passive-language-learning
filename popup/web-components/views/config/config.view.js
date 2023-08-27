@@ -4,11 +4,6 @@
   const html = ({ t, origin }) => {
     return `
       <div class="config">
-<!--          <div class="title">-->
-<!--            <img src="images/gear.png">-->
-
-<!--          </div>-->
-          
            <label class="switch" for="config-disable-on-this-website">
               <span class="website">
                 <img src="${FAVICON_BY_DOMAIN_URL_API_URL}${origin}" alt="logo">
@@ -26,31 +21,6 @@
               
               <input type="checkbox" id="config-disable-extension">
           </label>
-          
-          
-<!--          <div class="row">-->
-<!--         -->
-<!--          </div>-->
-
-<!--          <div class="row">-->
-<!--          <label for="select-lang-original">-->
-<!--              Replace:-->
-<!--              <select id="select-lang-original">-->
-<!--                  <option value="uk">Ukrainian</option>-->
-<!--                  <option value="en">English</option>-->
-<!--                  <option value="zh">Chinese</option>-->
-<!--              </select>-->
-<!--          </label>-->
-
-<!--          <label for="select-lang-translation">-->
-<!--              I learn…-->
-<!--              <select id="select-lang-translation">-->
-<!--                  <option value="en">English</option>-->
-<!--                  <option value="zh">Chinese</option>-->
-<!--                  <option value="uk">Ukrainian</option>-->
-<!--              </select>-->
-<!--          </label>-->
-<!--        </div>-->
       </div>
     `
   }
@@ -60,8 +30,6 @@
 
     defineElements: function () {
       return {
-        // langFrom: this.shadowRoot.getElementById('select-lang-original'),
-        // langTo: this.shadowRoot.getElementById('select-lang-translation'),
         disableOnThisWebsite: this.shadowRoot.getElementById('config-disable-on-this-website'),
         disableAtAll: this.shadowRoot.getElementById('config-disable-extension'),
       }
@@ -83,6 +51,7 @@
     ],
 
     renderArgs: function () {
+      document.body.append(this.store.clientInfo.origin ?? 'No origin')
       return {
         t: {
           disable: 'DISABLE for',
@@ -93,18 +62,7 @@
     },
 
     onAfterFirstRender: function () {
-      const onChange = this.store.updateConfig
-      // $langFrom.addEventListener('change', (event) => {
-      //   onChange({
-      //     fromLang: event.target.value,
-      //   })
-      // })
-      // $langTo.addEventListener('change', (event) => {
-      //   onChange({
-      //     toLang: event.target.value,
-      //   })
-      // })
-      this.$elements.disableOnThisWebsite.addEventListener('change', (event) => {
+      this.elements.disableOnThisWebsite.addEventListener('change', (event) => {
         const { state, clientInfo } = this.store
         const { config } = state
         const { origin } = clientInfo
@@ -119,12 +77,12 @@
           }
         }
 
-        onChange({
+        this.store.updateConfig({
           ignoredOrigins: ignoredOriginsNew,
         })
       })
-      this.$elements.disableAtAll.addEventListener('change', (event) => {
-        onChange({
+      this.elements.disableAtAll.addEventListener('change', (event) => {
+        this.store.updateConfig({
           disabledAtAll: event.target.checked,
         })
       })
