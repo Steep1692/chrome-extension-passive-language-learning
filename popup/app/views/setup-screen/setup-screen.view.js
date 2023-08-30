@@ -31,7 +31,7 @@
 
   AbacusLib.createWebComponent('setup-screen', html, {
     styleFilesURLs: [
-      'web-components/views/setup-screen/setup-screen.css',
+      'app/views/setup-screen/setup-screen.css',
     ],
     defineElements: function () {
       return {
@@ -56,7 +56,7 @@
         const formData = new FormData(event.currentTarget)
         const json = convertFormDataToJSON(formData)
 
-        Store.updateConfig(json)
+        this.store.updateConfig(json)
       })
     }
   })

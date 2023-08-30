@@ -1,6 +1,15 @@
 (() => {
   const PREFIX = 'pll'
 
+  const injectionsCache = {}
+
+  const moduleNameToURL = {
+    'Content-script-api': './content-script-api.js',
+    'Store': './store.js',
+    'Router': './router.js',
+    'Translator': './translator.js',
+  }
+
   // Don't show possibly broken HTML–markup until all styles are loaded
   const dontShowHtmlUntilAllCssLoaded = (shadowRoot, styleFilesURLs) => {
     let linksLoaded = 0
@@ -19,6 +28,20 @@
     }
   }
 
+  const injectModule = async (moduleName) => {
+    if (!moduleNameToURL[moduleName]) {
+      throw new Error(`Module ${moduleName} not found. Allowed modules: ${Object.keys().join(', ')}`)
+    }
+
+    if (injectionsCache[moduleName]) {
+      return injectionsCache[moduleName]
+    }
+
+    const module = await import(moduleNameToURL[moduleName])
+    injectionsCache[moduleName] = module.default
+    return injectionsCache[moduleName]
+  }
+
   const createWebComponent = (name, renderHTML, {
     styleFilesURLs,
     renderArgs,
@@ -26,16 +49,30 @@
     onStateChange,
     defineElements,
     changesOnStateChange,
+    injections,
   }) => {
     class AbacusComponent extends HTMLElement {
       constructor() {
         super()
         this.store = Store
+
+        if (injections) {
+          this.injections = {}
+
+          for (const injection of injections) {
+            const promise = injectModule(injection)
+            this.injections[injection] = promise
+            promise.then((module) => {
+              this.injections[injection] = module
+            })
+          }
+        }
+
         this.attachShadow({ mode: 'open' })
       }
 
       async connectedCallback() {
-        Store.subscribeToState((state, prevState, clarifications) => {
+        this.store.subscribeToState((state, prevState, clarifications) => {
           if (clarifications.init) {
             this.render(typeof renderArgs === 'function' ? renderArgs.call(this, state) : (renderArgs ?? state))
             this.elements = defineElements?.call(this)

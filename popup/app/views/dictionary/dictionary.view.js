@@ -142,7 +142,7 @@
 
   AbacusLib.createWebComponent('dictionary', html, {
     styleFilesURLs: [
-      'web-components/views/dictionary/dictionary.css',
+      'app/views/dictionary/dictionary.css',
       'css/button.css',
     ],
 
@@ -152,8 +152,8 @@
 
     onStateChange: function (state, prevState) {
       renderList(this.shadowRoot, state.dictionary, {
-        onEdit: Store.editItem.bind(state),
-        onDelete: Store.deleteItem.bind(state),
+        onEdit: this.store.editItem.bind(state),
+        onDelete: this.store.deleteItem.bind(state),
         scrollToBottom: prevState.dictionary.length < state.dictionary.length,
       })
     },

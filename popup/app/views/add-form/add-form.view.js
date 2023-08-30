@@ -11,15 +11,10 @@
 
   const TRANSLATION_DEBOUNCE = 500
 
-  const decorateWithTranslation = ($fromInput, $toInput, {
-    fromLang,
-    toLang,
-  }) => {
+  const decorateWithTranslation = ($fromInput, $toInput, getTranslationFn) => {
     let cancelFetchTranslationSignal
     const originalPlaceholder = $toInput.placeholder
     let isLastTransSetFromAPI = false
-
-    const translator = new Translator(fromLang, toLang)
 
     $fromInput.addEventListener('input', debounce(async () => {
       const value = $fromInput.value.trim()
@@ -31,7 +26,7 @@
 
         const controller = new AbortController()
         cancelFetchTranslationSignal = controller.signal
-        const translationString = await translator.getTranslation(value, {
+        const translationString = await getTranslationFn(value, {
           signal: cancelFetchTranslationSignal,
         })
 
@@ -49,8 +44,6 @@
 
       isLastTransSetFromAPI = false
     })
-
-    return translator
   }
 
   let translator
@@ -78,11 +71,13 @@
 
   AbacusLib.createWebComponent('add-form', html, {
     styleFilesURLs: [
-      'web-components/views/add-form/add-form.css',
+      'app/views/add-form/add-form.css',
       'css/button.css'
     ],
 
-    onAfterFirstRender: function (state) {
+    injections: ['Translator'],
+
+    onAfterFirstRender: async function(state) {
       const $form = this.shadowRoot.getElementById('root')
       const $originalInput = this.shadowRoot.getElementById('original-input')
       const $translationInput = this.shadowRoot.getElementById('translation-input')
@@ -102,17 +97,17 @@
         $originalInput.focus()
       })
 
-      translator = decorateWithTranslation($originalInput, $translationInput, {
-        fromLang: state.config.fromLang,
-        toLang: state.config.toLang,
-      })
-
       // Timeout, because focus is lost after render other components
       setTimeout(() => {
         $originalInput.focus()
       }, 100)
+
+      await this.injections.Translator
+      translator = new this.injections.Translator(state.config.fromLang, state.config.toLang)
+      decorateWithTranslation($originalInput, $translationInput, translator.getTranslation)
     },
-    onStateChange: (state) => {
+    onStateChange: async function (state) {
+      await this.injections.Translator
       translator.updateLanguages(state.config.fromLang, state.config.toLang)
     },
   })

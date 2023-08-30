@@ -24,3 +24,5 @@ class Translator {
     return json[0][0][0]
   }
 }
+
+export default Translator

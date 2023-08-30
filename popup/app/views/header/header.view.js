@@ -10,7 +10,7 @@
 
   AbacusLib.createWebComponent('header', html, {
     styleFilesURLs: [
-      'web-components/views/header/header.css',
+      'app/views/header/header.css',
     ],
   })
 })();

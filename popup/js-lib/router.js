@@ -1,4 +1,4 @@
-(() => {
+const Router = (() => {
   const SCREEN = {
     setup: 'setup',
     main: 'main',
@@ -20,7 +20,7 @@
     makeActiveScreen(SCREEN.setup)
   }, { once: true })
 
-  window.Router = {
+  return {
     SCREEN,
     makeActiveScreen,
   }

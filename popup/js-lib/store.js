@@ -3,16 +3,23 @@ class Store {
   static clientInfo = {}
   static dataUpdatedSubscriptions = []
   static initialFetch = null
-  static contentScriptEmitter = new ContentScriptApi()
 
-  static async initStore() {
-    Store.initialFetch = new Promise((resolve) => {
-      Store.contentScriptEmitter.getData().then(({ state, clientInfo }) => {
+  static async refreshDataWithContentScript() {
+    const promise = new Promise((resolve) => {
+      ContentScriptApi.getData().then(({ state, clientInfo }) => {
         Store.clientInfo = clientInfo
         Store.state = state
         resolve();
       });
     })
+
+    Store.initialFetch = promise
+
+    return promise
+  }
+
+  static async initStore() {
+    return Store.refreshDataWithContentScript()
   }
 
   static async setState (newState, newClientInfo) {
@@ -27,7 +34,7 @@ class Store {
       await cb(Store.state, prevState, { init: false })
     }
 
-    await Store.contentScriptEmitter.setData({
+    await ContentScriptApi.setData({
       dictionary: newState.dictionary,
       config: newState.config,
     })

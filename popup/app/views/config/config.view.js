@@ -26,7 +26,7 @@
   }
 
   AbacusLib.createWebComponent('config', html, {
-    styleFilesURLs: ['web-components/views/config/config.css'],
+    styleFilesURLs: ['app/views/config/config.css'],
 
     defineElements: function () {
       return {
@@ -38,8 +38,8 @@
     changesOnStateChange: [
       {
         when: (state, prevState) => state.config.ignoredOrigins !== prevState.config.ignoredOrigins,
-        do: ($elements, state) => {
-          $elements.disableOnThisWebsite.checked = state.config.ignoredOrigins.includes(origin)
+        do: function($elements, state) {
+          $elements.disableOnThisWebsite.checked = state.config.ignoredOrigins.includes(this.store.clientInfo.origin)
         }
       },
       {
@@ -51,7 +51,6 @@
     ],
 
     renderArgs: function () {
-      document.body.append(this.store.clientInfo.origin ?? 'No origin')
       return {
         t: {
           disable: 'DISABLE for',
@@ -81,6 +80,7 @@
           ignoredOrigins: ignoredOriginsNew,
         })
       })
+
       this.elements.disableAtAll.addEventListener('change', (event) => {
         this.store.updateConfig({
           disabledAtAll: event.target.checked,

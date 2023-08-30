@@ -5,12 +5,15 @@
   "description": "Learn passively while browsing the web!",
 
   "background": {
-    "service_worker": "service_worker.js",
-    "type": "module"
+    "service_worker": "service_worker.js"
   },
 
   "web_accessible_resources": [{
-    "resources": ["webpage.bundle.js"],
+    "resources": [
+      "injectable-content-script-that-can-access-anything.js",
+      "popup/js-lib/translator.js",
+      "popup/js-lib/toast.min.js"
+    ],
     "matches": ["<all_urls>"]
   }],
 
@@ -24,7 +27,8 @@
   }],
 
   "permissions": [
-    "storage"
+    "storage",
+    "contextMenus"
   ],
 
   "action": {

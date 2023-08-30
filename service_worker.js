@@ -1,6 +1,9 @@
-// chrome.browserAction.onClicked.addListener(function(activeTab) {
-//   chrome.tabs.executeScript(activeTab.id, {
-//     file: "inject.js",
-//     runAt: "document_start",
-//   });
-// });
+try {
+  importScripts(
+    "./popup/js-lib/content-script-api.js",
+
+    "./background.js"
+  );
+} catch (e) {
+  console.log(e);
+}

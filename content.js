@@ -1,5 +1,29 @@
 'use strict'
 
+class ScriptManager {
+  static injectScriptToPage = (src) => {
+    const n = document.createElement('script')
+    n.id = YoutubeSubtitlesSpeech.scriptId
+    document.documentElement.append(n)
+    n.src = chrome.runtime.getURL(src)
+    n.defer = true
+  }
+
+  static importScript = async (src) => {
+    const path = chrome.runtime.getURL(src)
+    return (await import(path))
+  }
+}
+
+let Translator, Toaster
+
+ScriptManager.importScript('popup/js-lib/translator.js').then((module) => {
+  Translator = module.default
+})
+ScriptManager.importScript('popup/js-lib/toast.min.js').then((module) => {
+  Toaster = module.toast
+})
+
 const SAMPLE_DATA = [{ 'original': 'home', 'translation': '家' }, {
   'original': 'person', 'translation': '人'
 }, { 'original': 'left', 'translation': '左' }, { 'original': 'right', 'translation': '右' }, {
@@ -306,6 +330,7 @@ class _Replacer {
     (node.nodeType === Node.TEXT_NODE || _Replacer.IGNORED_TAGS.includes(node.tagName.toLowerCase()))
     || _DOMUtils.isInputNode(node)
     || node.id === Tooltip.tooltipId
+    || (Toaster && node.id === Toaster.toasterId)
   )
 
   static #createMatchRegExp = (word) => (
@@ -689,11 +714,7 @@ class YoutubeSubtitlesSpeech {
   }
 
   static #injectYoutubeAPIExposer = () => {
-    const n = document.createElement('script')
-    n.id = YoutubeSubtitlesSpeech.scriptId
-    document.documentElement.append(n)
-    n.src = chrome.runtime.getURL('webpage.bundle.js')
-    n.defer = true
+    ScriptManager.injectScriptToPage('injectable-content-script-that-can-access-anything.js')
     YoutubeSubtitlesSpeech.#scriptInjected = true
   }
 
@@ -782,12 +803,10 @@ class YoutubeSubtitlesSpeech {
     version: '1.2',
   })
 
-  const state = {
+  const lastState = {
     dictionary: await dictionaryStoreManager.load(),
     config: await configStoreManager.load(),
   }
-
-  console.log(state)
 
   const clientInfo = {
     origin: window.location.origin,
@@ -795,37 +814,37 @@ class YoutubeSubtitlesSpeech {
 
   Tooltip.inject()
 
-  if (!isDisabled(state)) {
-    YoutubeSubtitlesSpeech.enable(state.dictionary, state.config.fromLang, state.config.toLang)
-    DOMChangesObserverReplacer.enable(state.dictionary)
+  if (!isDisabled(lastState)) {
+    YoutubeSubtitlesSpeech.enable(lastState.dictionary, lastState.config.fromLang, lastState.config.toLang)
+    DOMChangesObserverReplacer.enable(lastState.dictionary)
   }
 
   dictionaryStoreManager.subscribe((dictionary) => {
-    state.dictionary = dictionary
+    lastState.dictionary = dictionary
 
     DOMChangesObserverReplacer.setDictionary(dictionary)
     YoutubeSubtitlesSpeech.setDictionary(dictionary)
   })
 
   configStoreManager.subscribe((config) => {
-    state.config = config
+    lastState.config = config
 
     YoutubeSubtitlesSpeech.setLangsWithUpdate(config.fromLang, config.toLang)
     utterThis.lang = config.toLang
     utterThis2.lang = config.toLang
 
-    if (isDisabled(state)) {
+    if (isDisabled(lastState)) {
       window.location.reload()
     } else {
-      YoutubeSubtitlesSpeech.enable(state.dictionary, state.config.fromLang, state.config.toLang)
-      DOMChangesObserverReplacer.enable(state.dictionary)
+      YoutubeSubtitlesSpeech.enable(lastState.dictionary, lastState.config.fromLang, lastState.config.toLang)
+      DOMChangesObserverReplacer.enable(lastState.dictionary)
     }
   })
 
-  chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     switch (message.type) {
       case 'get-data': {
-        sendResponse({ state, clientInfo })
+        sendResponse({ state: lastState, clientInfo })
         break
       }
       case 'set-data': {
@@ -835,6 +854,26 @@ class YoutubeSubtitlesSpeech {
         sendResponse(true)
         break
       }
+      case 'add-word': {
+        const { word } = message.data
+
+        let wordTranslated
+        if (Translator) {
+          Toaster?.toast('Loading translation…')
+          const translator = new Translator(lastState.config.fromLang, lastState.config.toLang)
+          wordTranslated = await translator.getTranslation(word)
+        }
+
+        const translation = prompt(`Please, enter a translation for the word "${word}"`, wordTranslated)
+
+        const newDictItem = { original: word, translation, }
+        dictionaryStoreManager.save([...lastState.dictionary, newDictItem])
+
+        Toaster?.toast(`Word added ${word}: ${translation}!`)
+
+        sendResponse(true)
+        break
+      }
     }
-  })
+  });
 })()
