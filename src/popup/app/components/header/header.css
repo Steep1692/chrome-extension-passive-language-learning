@@ -1,0 +1,34 @@
+:host {
+    box-sizing: border-box;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+}
+
+button {
+    min-width: 48px;
+    padding: 9px 0;
+    box-sizing: border-box;
+    border: none;
+    background: none;
+
+    cursor: pointer;
+
+    transition: background 0.2s;
+}
+
+button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+button.active {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+button img {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+:host > button:not(:fist-child) {
+    border-left: none;
+}

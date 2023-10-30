@@ -1,0 +1,38 @@
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" href="css/popup.css">
+        <title>Passive Language Learning</title>
+        <meta name="google-signin-client_id" content="183599533407-e099omkc3ocp2snjbkhpv0ofa36pn6v6.apps.googleusercontent.com">
+    </head>
+
+    <body>
+        <pll-header></pll-header>
+
+        <main>
+            <pll-route path="home">
+                <pll-home-screen></pll-home-screen>
+            </pll-route>
+
+            <pll-route path="dictionary">
+                <pll-dictionary-screen></pll-dictionary-screen>
+            </pll-route>
+
+            <pll-route path="settings">
+                <pll-setup-screen></pll-setup-screen>
+            </pll-route>
+
+            <pll-route path="donate">
+                <pll-donate-screen></pll-donate-screen>
+            </pll-route>
+
+            <pll-route path="support">
+                <pll-support-screen></pll-support-screen>
+            </pll-route>
+        </main>
+
+        <div class="background"></div>
+    </body>
+
+    <script src="/popup/app/core/main.js"></script>
+</html>

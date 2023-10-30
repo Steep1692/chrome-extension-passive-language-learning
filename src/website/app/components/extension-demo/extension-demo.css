@@ -1,0 +1,85 @@
+.extension-demo {
+    /*display: none;*/
+
+    z-index: 4;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+
+    box-sizing: border-box;
+    overflow: hidden;
+    width: 400px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+
+    background-color: white;
+    box-shadow: 0px 0px 4px 1px #00000036;
+}
+
+.extension-demo.collapsed .body {
+    height: 0;
+    padding: 0;
+}
+
+.extension-demo.collapsed .head .icon {
+    transform: rotate(180deg);
+}
+
+.extension-demo .head {
+    width: 100%;
+    display: grid;
+    align-items: center;
+    grid-template-columns: 1fr auto 1fr;
+    grid-column-gap: 8px;
+    padding: 4px 16px;
+    border: none;
+
+
+    background-color: #ff7171;
+
+    cursor: pointer;
+}
+
+.extension-demo .head .title {
+    box-sizing: border-box;
+    margin-top: 4px;
+
+    font-size: 20px;
+    font-family: Skranji-Regular;
+
+    color: white;
+}
+
+.extension-demo .head .icon {
+    justify-self: flex-end;
+
+    width: 36px;
+    height: 36px;
+
+    background-image: url("/website/assets/images/icons/chevron-down.png");
+    background-size: 28px 16px;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    background-position: center;
+
+    filter: invert(1) drop-shadow(0 1px 1px black);
+}
+
+.extension-demo .head:hover {
+    background-color: #fa5f5f;
+}
+
+.extension-demo .head:active {
+    background-color: #fa4b4b;
+}
+
+.extension-demo .body {
+    box-sizing: border-box;
+
+    height: 503px;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    padding: 16px 8px;
+
+    transition: height 0.2s ease-in-out;
+}

@@ -1,0 +1,22 @@
+.typography {
+    font-family: Skranji-Regular;
+    text-align: center;
+    text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+    letter-spacing: 1px;
+}
+
+.title {
+    font-size: 2rem;
+    color: var(--primary);
+}
+
+.subtitle {
+    font-size: 1.8rem;
+    color: var(--secondary);
+}
+
+.body {
+    font-size: 1.4rem;
+    color: var(--text-body);
+    text-shadow: none;
+}

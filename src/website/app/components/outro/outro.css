@@ -1,0 +1,94 @@
+.outro {
+    position: relative;
+
+    display: grid;
+    grid-template-rows: auto auto 1fr;
+    grid-row-gap: 12px;
+
+    min-height: calc(100vh - 64px);
+    padding: 12px 12px 24px;
+    margin: 32px 32px 16px;
+
+    border-radius: 21px;
+
+    font-family: Skranji-Regular;
+
+    background: conic-gradient(from 90deg at 50% 50%, rgba(255, 51, 0, 0) 0%, rgb(18, 176, 18) 100%);
+    box-shadow: 0px 0px 18px 9px #0000003b;
+}
+
+.outro:before {
+    content: "";
+    z-index: 1;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    width: 50%;
+    height: 50%;
+
+    background-image: url("/website/assets/images/bg/ukraine.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+
+    filter: blur(1px);
+}
+
+.outro:after {
+    content: "";
+    z-index: 2;
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    width: 100%;
+    height: 100%;
+
+    background-image: url("/website/assets/images/bg/outro.png");
+    background-size: 256px 205px;
+    background-position: center;
+
+    opacity: 0.1;
+}
+
+.outro > * {
+    z-index: 3;
+}
+
+.outro .title {
+    font-size: 30px;
+    text-align: center;
+    text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+
+    color: var(--secondary);
+}
+
+.outro .title h1 {
+    color: var(--primary);
+}
+
+.outro .content {
+    padding: 8px;
+
+    font-size: 24px;
+
+    text-shadow: -1px 0 rgba(0, 0, 0, 0.4), 0 1px rgba(0, 0, 0, 0.4), 1px 0 rgba(0, 0, 0, 0.4), 0 -1px rgba(0, 0, 0, 0.4);
+    background: lightseagreen;
+    color: var(--text-light);
+    box-shadow: 0px 0px 7px 8px #00b3ff42;
+}
+
+.outro .actions {
+    margin-top: 20px;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+@media screen and (max-width: 768px) {
+    .outro .title {
+        font-size: 19px;
+    }
+}
