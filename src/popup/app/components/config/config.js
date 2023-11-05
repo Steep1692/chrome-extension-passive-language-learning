@@ -9,14 +9,13 @@
     const origin = state.clientInfo.origin ?? ''
 
     return `
-      <div class="config">
-           <label class="switch">
+      <label class="switch">
               <span class="website">
                 <img src="${FAVICON_BY_DOMAIN_URL_API_URL}${origin}" alt="logo">
                 ${t.disable} ${removeUrlProtocol(origin)}
               </span>
               
-              <input ${disableOnThisWebsite && 'checked'} type="checkbox" @onChange="disableOnThisWebsite">
+              <input ${disableOnThisWebsite && 'checked'} type="checkbox" data-listen-on-Change="disableOnThisWebsite">
           </label>
 
           <label class="switch">
@@ -25,9 +24,8 @@
                   ${t.disable} ${t.allWebsites}
               </span>
               
-              <input ${disableAtAll && 'checked'} type="checkbox" @onChange="disableAtAll">
+              <input ${disableAtAll && 'checked'} type="checkbox" data-listen-on-Change="disableAtAll">
           </label>
-      </div>
     `
   }
 
@@ -57,12 +55,13 @@
 
     html,
     css: `
-      .config {
+      :host {
           padding: 3px 0;
           border: 1px solid darkkhaki;
           border-radius: 8px;
 
           display: grid;
+          width: 100%;
       
           background: rgba(255, 255, 224, 0.82);
       }
@@ -83,6 +82,7 @@
       
           font-size: 14px;
           font-weight: 700;
+          text-align: left;
       
           cursor: pointer;
           user-select: none;

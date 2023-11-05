@@ -128,6 +128,7 @@
   }
 
   const INITIAL_STATE = {
+    profile: null,
     currentFolderId: null,
     folders: FOLDERS_SAMPLE_DATA,
     foldersEntries: FOLDER_ENTRIES_SAMPLE_DATA,

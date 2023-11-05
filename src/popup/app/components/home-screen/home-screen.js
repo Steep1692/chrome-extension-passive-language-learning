@@ -1,53 +1,77 @@
-function onSignIn(googleUser) {
-  var profile = googleUser.getBasicProfile();
-  console.log('ID: ' + profile.getId()); // Do not send to your backend! Use an ID token instead.
-  console.log('Name: ' + profile.getName());
-  console.log('Image URL: ' + profile.getImageUrl());
-  console.log('Email: ' + profile.getEmail()); // This is null if the 'email' scope is not present.
-}
-
 (() => {
-  const html = () => {
+  const html = ({ t, state }) => {
+    let $children
+
+    if (state.profile) {
+      $children = (
+        `<div class="profile-view">
+          <div class="profile-avatar-wrapper">
+            <img src="${state.profile.picture}" alt="avatar">
+          </div>
+          <pll-typography variant="subtitle" text="${state.profile.name}"></pll-typography>
+          <pll-typography variant="body" text="${state.profile.email}"></pll-typography>
+        </div>`
+      )
+    } else {
+      $children = (
+        `<button is="pll-button" data-color="light" data-listen-on-Click="googleO2auth">
+            <img src="/popup/app/components/home-screen/google.svg" alt="">
+            ${t.signInWithGoogle}
+        </button>`
+      )
+    }
+
     return (
-      `<button @onClick="signInWithGoogle">Sign In with Google</button><div id="buttonDiv"></div>`
+      `<pll-typography variant="title" text="${t.title}"></pll-typography>
+      ${$children}
+      <pll-typography variant="title" text="TODO: Add here ability to add done sets to the dictionary"></pll-typography>`
     )
   }
 
+  const translatesEN = {
+    title: 'Home page',
+    signInWithGoogle: 'Sign In with Google',
+  }
+
+  const translatesUK = {
+    title: 'Домашня сторінка',
+    signInWithGoogle: 'Увійти за допомогою Google',
+  }
+
+  const translatesZH = {
+    title: '主页',
+    signInWithGoogle: '用Google登录',
+  }
+
+  const translates = {
+    en: translatesEN,
+    uk: translatesUK,
+    zh: translatesZH,
+  }
+
   AbacusLib.createWebComponent('home-screen', {
-    dontUseShadowDOM: true,
+    translates,
 
     html,
-    css: `
-      :host {
-        min-height: 0;
-        height: 100%;
-        display: grid;
-        grid-template-rows: auto 1fr;
-        grid-row-gap: 6px;
-      }
-    `,
+    styleFilesURLs: [
+      'default',
+    ],
+
     methods: {
-      signInWithGoogle() {
-        gapi.signin2.go('signin2');
-      },
-    },
-    plugins: ['GsiClient'],
-    async onAfterFirstRender(ctx) {
-      await ctx.plugins.GsiClient;
-
-      function handleCredentialResponse(response) {
-        console.log("Encoded JWT ID token: " + response.credential);
+      async googleO2auth(ctx) {
+        const GoogleServices = await ctx.services.Google
+        const accessToken = await GoogleServices.authorize()
+        if (accessToken) {
+          const profile = await GoogleServices.getProfile(accessToken)
+          ctx.stateMutators.setProfile(profile)
+        }
+        return !!accessToken
       }
+    },
 
-      google.accounts.id.initialize({
-        client_id: "183599533407-e099omkc3ocp2snjbkhpv0ofa36pn6v6.apps.googleusercontent.com",
-        callback: handleCredentialResponse
-      });
-      google.accounts.id.renderButton(
-        document.getElementById("buttonDiv"),
-        { theme: "outline", size: "large" }  // customization attributes
-      );
-      google.accounts.id.prompt(); // also display the One Tap dialog
+    services: ['Google:module'],
+    onAfterFirstRender(ctx) {
+      ctx.methods.googleO2auth(ctx)
     },
   })
-})();
+})()

@@ -8,8 +8,6 @@
   align-content: flex-start;
   grid-template-rows: auto 1fr auto;
   grid-row-gap: 10px;
-
-  padding: 10px;
 }
 
 .content {

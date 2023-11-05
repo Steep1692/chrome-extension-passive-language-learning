@@ -79,7 +79,7 @@
     height: 503px;
     display: grid;
     grid-template-rows: 1fr auto;
-    padding: 16px 8px;
+    padding: 8px;
 
     transition: height 0.2s ease-in-out;
 }

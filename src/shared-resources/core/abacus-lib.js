@@ -1,6 +1,7 @@
 (async () => {
   const HTMLElementClassToTagName = new Map()
   HTMLElementClassToTagName.set(HTMLButtonElement, 'button')
+  HTMLElementClassToTagName.set(HTMLInputElement, 'input')
 
   const init = ({
                   state,
@@ -8,7 +9,8 @@
                   onStateMutation,
 
                   componentInjections,
-                  pluginInjections
+                  pluginInjections,
+                  serviceInjections,
   }) => {
     const PREFIX = 'pll'
     const SymbolComponentName = Symbol('Abacus Component Name')
@@ -195,11 +197,18 @@
       return tagName[0].toUpperCase() + dashCaseToCamel(tagName).slice(1)
     }
 
-    const elKey = 'data-' + PREFIX + '-key'
+    const elKey = 'data-key'
+    const hasNodesKeys = ($el1, $el2) => $el1.hasAttribute(elKey) || $el2.hasAttribute(elKey)
     const isNodesKeysDifferent = ($el1, $el2) => $el1.getAttribute(elKey) !== $el2.getAttribute(elKey)
     const isNodesTagsDifferent = ($el1, $el2) => $el1.tagName !== $el2.tagName
     const isSlotContentHolder = ($el) => $el.hasAttribute('slot')
-    const isAbacusExtendComponent = ($el) => $el.hasAttribute('is')
+    const isAbacusExtendComponent = ($el) => {
+      try {
+        return $el.hasAttribute('is')
+      } catch (e) {
+        debugger
+      }
+    }
     const isAbacusComponent = ($el) => !!$el.tagName?.toLowerCase().startsWith(PREFIX)
     const isTemplateNode = ($el) => $el.tagName === 'TEMPLATE'
 
@@ -226,37 +235,54 @@
 
     const componentInjectionsCache = {}
     const pluginInjectionsCache = {}
+    const servicesInjectionsCache = {}
 
-    const injectComponent = (componentName) => {
-      const url = componentInjections[componentName]
+    const injectComponent = (name) => {
+      const url = componentInjections[name]
 
       if (!url) {
-        throw new Error(`Module ${componentName} not found on ${url}`)
+        throw new Error(`Module ${name} not found on ${url}`)
       }
 
-      if (componentInjectionsCache[componentName]) {
-        return componentInjectionsCache[componentName]
+      if (componentInjectionsCache[name]) {
+        return componentInjectionsCache[name]
       }
 
-      componentInjectionsCache[componentName] = ScriptManager.injectScriptToPage(url)
+      componentInjectionsCache[name] = ScriptManager.injectScriptToPage(url)
 
-      return componentInjectionsCache[componentName]
+      return componentInjectionsCache[name]
     }
 
-    const injectPlugin = (pluginName, module) => {
-      const url = pluginInjections[pluginName]
+    const injectPlugin = (name, module) => {
+      const url = pluginInjections[name]
 
       if (!url) {
-        throw new Error(`Module ${pluginName} not found on ${url}.`)
+        throw new Error(`Plugin ${name} not found on ${url}.`)
       }
 
-      if (pluginInjectionsCache[pluginName]) {
-        return pluginInjectionsCache[pluginName]
+      if (pluginInjectionsCache[name]) {
+        return pluginInjectionsCache[name]
       }
 
-      pluginInjectionsCache[pluginName] = module ? import(url) : ScriptManager.injectScriptToPage(url)
+      pluginInjectionsCache[name] = module ? import(url) : ScriptManager.injectScriptToPage(url)
 
-      return pluginInjectionsCache[pluginName]
+      return pluginInjectionsCache[name]
+    }
+
+    const injectService = (name, module) => {
+      const url = serviceInjections[name]
+
+      if (!url) {
+        throw new Error(`Service ${name} not found on ${url}.`)
+      }
+
+      if (servicesInjectionsCache[name]) {
+        return servicesInjectionsCache[name]
+      }
+
+      servicesInjectionsCache[name] = module ? import(url) : ScriptManager.injectScriptToPage(url)
+
+      return servicesInjectionsCache[name]
     }
 
     const findAndInjectComponentsInNode = ($node) => {
@@ -334,6 +360,12 @@
     }
     // ==============
 
+    // TRANSLATES
+    const injectTranslations = (name) => {
+      return fetch(componentInjections[tagNameToComponentName(name)].replace('.js', '.translates.json')).then(r => r.json())
+    }
+    // ==============
+
     // SLOTS
     function slotsAsData(parent) {
       const data = {};
@@ -390,14 +422,15 @@
 
 
     // LISTENERS
+    const LISTENER_PREFIX = 'data-listen-on-'
     const attachListeners = ($el, ctx) => {
       const attrs = getAttrsNormalized($el)
 
       for (const key in attrs) {
         const value = attrs[key]
 
-        if (key.startsWith('@on')) {
-          const eventName = key.slice(3).toLowerCase()
+        if (key.startsWith(LISTENER_PREFIX)) {
+          const eventName = key.slice(LISTENER_PREFIX.length).toLowerCase()
 
           $el.addEventListener(eventName, async (...arguments) => {
             ReactiveState.disableReactivity()
@@ -446,12 +479,13 @@
         && $new.childNodes.length
         && $old.childNodes.length === $new.childNodes.length
         && [...$new.childNodes].every(
-          ($child, index) => $child.tagName === $old.childNodes[index].tagName
+          ($child, index) => !isNodesTagsDifferent($child, $old.childNodes[index])
         )
       ) {
-        for (const childNode of $new.childNodes) {
-          const index = [...$new.childNodes].indexOf(childNode)
-          abacusNodesUpdate($old.childNodes[index], childNode, ctx)
+        const $newChildNodes = [...$new.childNodes]
+
+        for (let i = 0; i < $newChildNodes.length; i++) {
+          abacusNodesUpdate($old.childNodes[i], $newChildNodes[i], ctx)
         }
       } else {
         const newContent = $new.innerHTML ?? $new.textContent
@@ -466,11 +500,18 @@
     }
 
     function abacusNodesUpdate($old, $new, ctx) {
+      if ($new.nodeType !== $old.nodeType) {
+        console.trace()
+      }
+
       if ($new.nodeType === Node.TEXT_NODE) {
+
         if ($old.nodeValue !== $new.nodeValue) {
           $old.nodeValue = $new.nodeValue
         }
+
         return
+
       }
 
       if ($new.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
@@ -483,24 +524,25 @@
         return
       }
 
-
-      const abacusElement = (isAbacusComponent($new) && isAbacusComponent($old))
-        || (isAbacusExtendComponent($new) && isAbacusExtendComponent($old))
-
-      if (abacusElement && !isNodesTagsDifferent($old, $new)) {
-        moveAttributes($new, $old)
-        updateSlotContentHoldersInChildren($old, $new, ctx)
+      if (
+        $old.nodeType === Node.TEXT_NODE
+        || isNodesTagsDifferent($old, $new)
+        || (hasNodesKeys($old, $new) && isNodesKeysDifferent($old, $new))
+      ) {
+        $old.parentNode.replaceChild($new, $old)
+        attachListenersToChildren($new.parentNode, ctx) // attach listeners to new nodes in DOM
+        findAndInjectComponentsInNode($new.parentNode)
       } else {
+        moveAttributes($new, $old)
 
-        if (isNodesKeysDifferent($old, $new) || isNodesTagsDifferent($old, $new)) {
-          $old.parentNode.replaceChild($new, $old)
-          attachListenersToChildren($new, ctx) // attach listeners to new nodes in DOM
-          findAndInjectComponentsInNode($new.parentNode)
+        const abacusElement = (isAbacusComponent($new) && isAbacusComponent($old))
+          || (isAbacusExtendComponent($new) && isAbacusExtendComponent($old))
+
+        if (abacusElement) {
+          updateSlotContentHoldersInChildren($old, $new, ctx)
         } else {
-          moveAttributes($new, $old)
           updateChildNodes($old, $new, ctx)
         }
-
       }
     }
     // ==============
@@ -509,6 +551,7 @@
     const createWebComponent = (name, {
       dontUseShadowDOM,
 
+      hasTranslates,
       translates,
 
       html,
@@ -516,7 +559,9 @@
       styleFilesURLs,
 
       plugins,
+      services,
 
+      localState,
       methods,
 
       onAfterFirstRender,
@@ -535,13 +580,15 @@
       class AbacusComponent extends ExtendedElement {
         $root
 
+        localState
         state
         stateMutators
 
-        mounted = false
+        firstRenderer = true
 
         constructor() {
           super()
+          this.localState = localState ?? null
 
           if (dontUseShadowDOM || extendsElement) {
             this.$root = this
@@ -560,6 +607,22 @@
               this.plugins[keyName] = new Promise((resolve) => {
                 promise.then((module) => {
                   this.plugins[keyName] = module.default
+                  resolve(module.default)
+                })
+              });
+            }
+          }
+
+          if (services) {
+            this.services = {}
+
+            for (const key of services) {
+              const [keyName, keyType] = key.split(':')
+              const promise = injectService(keyName, keyType === 'module')
+
+              this.services[keyName] = new Promise((resolve) => {
+                promise.then((module) => {
+                  this.services[keyName] = module.default
                   resolve(module.default)
                 })
               });
@@ -586,6 +649,15 @@
           }
 
           this.state = ReactiveState.getWithoutReactivity(ReactiveState, 'state')
+        }
+
+        setLocalState(payload) {
+          this.localState = {
+            ...this.localState,
+            ...payload,
+          }
+
+          this.render()
         }
 
         observeSlotContentHolders() {
@@ -645,7 +717,7 @@
         }
 
         async connectedCallback() {
-          if (!this.mounted) {
+          if (this.firstRenderer) {
             if (styleFilesURLs) {
               const styleFileURLsFinal = styleFilesURLs.map((url) => {
                 if (url === 'default') {
@@ -656,6 +728,11 @@
               })
 
               injectStyleFiles(this, styleFileURLsFinal)
+            }
+
+            if (hasTranslates) {
+              translates = await injectTranslations(name)
+              this.translates = translates
             }
 
             if (css) {
@@ -673,7 +750,7 @@
 
             onAfterFirstRender?.call(this, this)
 
-            this.mounted = true
+            this.firstRenderer = false
           }
 
           if (stateEffects) {
@@ -718,6 +795,7 @@
             t: translations,
             state,
             classnames,
+            localState: this.localState,
             ...this.props,
           }
 

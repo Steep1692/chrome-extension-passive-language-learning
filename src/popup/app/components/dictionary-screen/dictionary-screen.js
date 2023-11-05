@@ -1,12 +1,14 @@
 (() => {
-  const html = () => {
+  const html = ({ t }) => {
     return (
-      `<pll-config></pll-config>
+      `<pll-typography variant="title" text="${t.title}"></pll-typography>
       <pll-dictionary></pll-dictionary>`
     )
   }
 
   AbacusLib.createWebComponent('dictionary-screen', {
+    hasTranslates: true,
+
     html,
     css: `
       :host {
@@ -15,6 +17,10 @@
         display: grid;
         grid-template-rows: auto 1fr;
         grid-row-gap: 6px;
+      }
+      
+      pll-typography {
+        text-align: center;
       }
     `
   })

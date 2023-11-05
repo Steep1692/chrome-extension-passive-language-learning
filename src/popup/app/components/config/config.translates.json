@@ -1,0 +1,14 @@
+{
+  "en": {
+    "disable": "DISABLE for",
+    "allWebsites": "All Websites"
+  },
+  "uk": {
+    "disable": "Відключити для",
+    "allWebsites": "Всіх веб-сайтів"
+  },
+  "zh": {
+    "disable": "禁用",
+    "allWebsites": "所有网站"
+  }
+}

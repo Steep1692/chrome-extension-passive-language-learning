@@ -42,15 +42,15 @@
 
   const html = ({ t }) => {
     return (
-      `<form id="root" @onSubmit="onSubmit">
+      `<form id="root" data-listen-on-Submit="onSubmit">
         <label class="form-label" for="original-input">
             <span>${t.original}:</span>
-            <input class="form-input" type="text" id="original-input" placeholder="pig" @onInput="onInputFrom">
+            <input class="form-input" type="text" id="original-input" placeholder="pig" data-listen-on-Input="onInputFrom">
         </label>
 
         <label class="form-label" for="translation-input">
             <span>${t.translation}:</span>
-            <input class="form-input" type="text" id="translation-input" placeholder="豕" @onInput="onInputTo">
+            <input class="form-input" type="text" id="translation-input" placeholder="豕" data-listen-on-Input="onInputTo">
         </label>
 
         <button type="submit" is="pll-button" data-variant="submit">
@@ -201,15 +201,6 @@
 
         if (translator) {
           translator.updateLanguages(fromLang, toLang)
-        }
-      },
-      function rootClassName() {
-        const folderView = !this.state.currentFolderId
-
-        if (folderView) {
-          this.$root.host.classList.add('folder-view')
-        } else {
-          this.$root.host.classList.remove('folder-view')
         }
       },
     ],

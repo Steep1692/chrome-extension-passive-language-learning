@@ -3,6 +3,7 @@ const sharedComponentsPath = sharedResourcesPath + 'components/'
 
 export default {
   Button: sharedComponentsPath + 'button/button.js',
+  Input: sharedComponentsPath + 'input/input.js',
   Route: sharedComponentsPath + 'route/route.js',
   BubbleBackground: sharedComponentsPath + 'bubble-background/bubble-background.js',
   Languages: sharedComponentsPath + 'languages/languages.js',

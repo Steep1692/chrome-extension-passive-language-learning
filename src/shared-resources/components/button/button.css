@@ -100,7 +100,7 @@ form:not(:valid) button[is="pll-button"] {
 }
 
 
-button[data-variant="submit"] {
+button[is="pll-button"][data-variant="submit"] {
     --box-shadow: #306e32;
     --box-shadow-inset: #8ab38f;
     padding: 12px;
@@ -113,9 +113,35 @@ button[data-variant="submit"] {
     box-shadow: 0px 0px 4px 1px #00000036;
 }
 
+button[is="pll-button"][data-color="delete"] {
+    background-color: red;
+}
 
-button[data-variant="delete"],
-button[data-variant="edit"] {
+button[is="pll-button"][data-color="edit"] {
+    background-color: #4caf50;
+}
+
+button[is="pll-button"][data-color="add"] {
+    background-color: #49abd3;
+}
+
+button[is="pll-button"][data-color="back"] {
+    background-color: #ffc850;
+}
+
+button[is="pll-button"][data-color="light"] {
+    background-color: #ffffff;
+    color: var(--text-dark);
+}
+
+button[is="pll-button"] img {
+    width: 18px;
+    height: 18px;
+    padding: 0 6px;
+    filter: invert(1);
+}
+
+button[is="pll-button"][data-variant="circle"] {
     --box-shadow: rgba(45, 35, 66, 0.3);
     --box-shadow-inset: #00000036;
     border: none;
@@ -125,41 +151,10 @@ button[data-variant="edit"] {
     height: 36px;
 }
 
-button[data-variant="delete"] {
-    background-color: red;
-}
-
-button[data-variant="edit"] {
-    background-color: #4caf50;
-}
-
-button[data-variant="add"],
-button[data-variant="back"] {
+button[is="pll-button"]:not([data-variant="circle"]) {
     border: none;
     box-shadow: 0px 0px 4px 1px #00000036;
-    background-color: #49abd3;
     color: var(--text-light);
     padding: 12px 8px;
     border-radius: 16px;
-}
-
-button[data-variant="add"] {
-    background-color: #49abd3;
-}
-
-button[data-variant="back"] {
-    background-color: #ffc850;
-}
-
-button[data-variant="delete"] img,
-button[data-variant="edit"] img,
-button[data-variant="add"] img,
-button[data-variant="back"] img {
-    filter: invert(1);
-}
-
-button img {
-    width: 18px;
-    height: 18px;
-    padding: 0 6px;
 }

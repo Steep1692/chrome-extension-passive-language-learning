@@ -82,20 +82,6 @@
 }
 
 
-.todo-item-field-wrap.folder {
-  background: none;
-  border: none;
-  border-radius: 14px;
-
-  text-align: left;
-
-  cursor: pointer;
-}
-
-.todo-item-field-wrap.folder:hover {
-    background-color: rgba(228, 228, 228, 0.69);
-}
-
 .todo-item-field-wrap:first-of-type .field {
   border-top-left-radius: 15px;
   border-bottom-left-radius: 15px;
@@ -114,10 +100,6 @@
   align-items: center;
   grid-template-columns: 1fr 1fr auto;
   grid-column-gap: 10px;
-}
-
-.todo-item-inner.folder {
-  grid-template-columns: 1fr auto auto;
 }
 
 .todo-item-field-wrap {
@@ -160,6 +142,7 @@
   top: 0;
   width: 100%;
   height: 100%;
+  padding-left: 12px;
   box-sizing: border-box;
 }
 
@@ -167,14 +150,11 @@
   visibility: hidden;
 }
 
-#btn-add-folder,
 #entries-actions {
   position: sticky;
   bottom: 8px;
-  margin: 8px;
-}
 
-#entries-actions {
+  margin: 8px;
   display: grid;
   grid-template-columns: auto auto;
   grid-column-gap: 10px;

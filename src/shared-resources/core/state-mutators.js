@@ -1,4 +1,8 @@
 const StateMutators = {
+  setProfile(state, profile) {
+    state.profile = profile
+  },
+
   setCurrentFolderId(state, entriesId) {
     state.currentFolderId = entriesId
   },
@@ -28,8 +32,8 @@ const StateMutators = {
       translation: '',
     })
   },
-  editWord(state, index, payload) {
-    const item = state.dictionary[index]
+  editWord(state, entriesId, index, payload) {
+    const item = state.foldersEntries[entriesId][index]
 
     for (const payloadKey in payload) {
       item[payloadKey] = payload[payloadKey]

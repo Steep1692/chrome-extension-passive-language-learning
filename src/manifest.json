@@ -8,6 +8,13 @@
     "service_worker": "popup/service_worker.js"
   },
 
+  "oauth2": {
+    "client_id": "183599533407-4v0r6qjs8u73a46r8k5lkkubn2kbpank.apps.googleusercontent.com",
+    "scopes": [
+      "openid", "email", "profile"
+    ]
+  },
+
   "web_accessible_resources": [{
     "resources": [
       "shared-resources/core/injectable-content-script-that-can-access-anything.js",
@@ -28,7 +35,8 @@
 
   "permissions": [
     "storage",
-    "contextMenus"
+    "contextMenus",
+    "identity"
   ],
 
   "action": {

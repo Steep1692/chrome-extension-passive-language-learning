@@ -5,7 +5,7 @@
       `<video class="root" muted controls src="${src}">
         <!-- key is added so the new node is mounted to DOM every time the subtitles track is changed,
          otherwise it would be the same node but with changing attributes -->
-        <track data-pll-key="${srcLang}" kind="subtitles" default src="${trackSrc}" srclang="${srcLang}" label="${srcLang}">
+        <track data-key="${srcLang}" kind="subtitles" default src="${trackSrc}" srclang="${srcLang}" label="${srcLang}">
       </video>`
     )
   }

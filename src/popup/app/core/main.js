@@ -32,6 +32,7 @@ class ScriptManager {
   const componentInjections = import('/popup/app/components/injections.js')
   const sharedComponentInjectionsData = import('/shared-resources/components/injections.js')
   const pluginInjectionsData = import('/shared-resources/plugins/injections.js')
+  const servicesInjectionsData = import('/shared-resources/services/injections.js')
 
   const contentAPIData = ScriptManager.injectScriptToPage('/shared-resources/core/content-script-api.js')
   const stateMutatorsData = ScriptManager.injectScriptToPage('/shared-resources/core/state-mutators.js')
@@ -43,6 +44,7 @@ class ScriptManager {
     componentInjections,
     sharedComponentInjectionsData,
     pluginInjectionsData,
+    servicesInjectionsData,
 
     contentAPIData,
 
@@ -50,7 +52,7 @@ class ScriptManager {
     abacusLibData,
 
     themeControllerData,
-  ]).then(async ([res1, res2, res3]) => {
+  ]).then(async ([res1, res2, res3, res4]) => {
 
     ContentScriptApi.getData().then(({ state }) => {
       AbacusLib.init({
@@ -61,6 +63,7 @@ class ScriptManager {
           ...res2.default,
         },
         pluginInjections: res3.default,
+        serviceInjections: res4.default,
 
         onStateMutation: (mutatorName, ...args) => {
           // Update theme when {config.theme} is changed

@@ -1,0 +1,26 @@
+{
+  "en": {
+    "title": "Settings",
+    "yourLang": "Your language",
+    "en": "English",
+    "zh": "Chinese",
+    "uk": "Ukrainian",
+    "startLearning": "Start learning"
+  },
+  "uk": {
+    "title": "Налаштування",
+    "yourLang": "Ваша мова",
+    "en": "Англійська",
+    "zh": "Китайська",
+    "uk": "Українська",
+    "startLearning": "Почати вивчення"
+  },
+  "zh": {
+    "title": "设置",
+    "yourLang": "你的语言",
+    "en": "英语",
+    "zh": "中文",
+    "uk": "乌克兰语",
+    "startLearning": "开始学习"
+  }
+}

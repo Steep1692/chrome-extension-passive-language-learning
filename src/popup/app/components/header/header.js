@@ -8,20 +8,19 @@
     }
 
     return (
-      `
-        <button class="${classnames({ 'active': path === 'home' })}" @onClick="goHome">
+      `<button class="${classnames({ 'active': path === 'home' })}" data-listen-on-Click="goHome">
           <img src="/popup/app/components/header/home.svg" alt="Open home tab" />
         </button>
-       <button class="${classnames({ 'active': path === 'dictionary' })}" @onClick="goDictionary">
+       <button class="${classnames({ 'active': path === 'dictionary' })}" data-listen-on-Click="goDictionary">
           <img src="/popup/app/components/header/dictionary.svg" alt="Open dictionary tab" />
         </button>
-        <button class="${classnames({ 'active': path === 'settings' })}" @onClick="goSettings">
+        <button class="${classnames({ 'active': path === 'settings' })}" data-listen-on-Click="goSettings">
           <img src="/popup/app/components/header/settings.svg" alt="Open settings tab" />
         </button>
-        <button class="${classnames({ 'active': path === 'donate' })}" @onClick="goDonate">
+        <button class="${classnames({ 'active': path === 'donate' })}" data-listen-on-Click="goDonate">
           <img src="/popup/app/components/header/donate.svg" alt="Open donate tab" />
         </button>
-         <button class="${classnames({ 'active': path === 'support' })}" @onClick="goSupport">
+         <button class="${classnames({ 'active': path === 'support' })}" data-listen-on-Click="goSupport">
           <img src="/popup/app/components/header/support.svg" alt="Open support tab" />
         </button>
       `

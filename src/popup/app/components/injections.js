@@ -1,7 +1,7 @@
 const popupViewsPath = '/popup/app/components/'
 
 export default {
-  Config: popupViewsPath + 'config/config.view.js',
+  Config: popupViewsPath + 'config/config.js',
   Header: popupViewsPath + 'header/header.js',
 
   HomeScreen: popupViewsPath + 'home-screen/home-screen.js',

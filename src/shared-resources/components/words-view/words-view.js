@@ -5,7 +5,7 @@
     return `<div class="todo-item-field-wrap">
       <span
         class="field ${type}" 
-        @onClick="onWordClick" 
+        data-listen-on-Click="onWordClick" 
       >${word}</span>
       <input 
         class="todo-item-input ${classNameHidden}" 
@@ -13,10 +13,10 @@
         value="${word}"
         data-index="${index}"
         data-field-key="${type}"
-        @onChange="onInputChange"
-        @onFocus="onInputFocus"
-        @onBlur="onEditSuccess"
-        @onKeyDown="onInputKeyDown"
+        data-listen-on-Change="onInputChange"
+        data-listen-on-Focus="onInputFocus"
+        data-listen-on-Blur="onEditSuccess"
+        data-listen-on-KeyDown="onInputKeyDown"
       >
     </div>`
   }
@@ -33,7 +33,7 @@
       `<li class="todo-item ${odd ? 'odd' : ''}">
          <div class="todo-item-inner">
            ${$fields}
-          <button is="pll-button" data-variant="delete" data-index="${i}" @onClick="deleteWord">
+          <button is="pll-button" data-variant="circle" data-color="delete" data-index="${i}" data-listen-on-Click="deleteWord">
             <img src="/shared-resources/components/words-view/delete.svg" alt="Delete">
           </button>
         </div>
@@ -44,18 +44,31 @@
   const renderList = (dictionary) => {
     let $out = ''
 
-    for (let i = 0; i < dictionary.length; i++) {
-      $out += renderWordsRow(dictionary[i], i)
-    }
+    dictionary.forEach((item, i) => {
+      $out += renderWordsRow(item, i)
+    })
 
     return $out
   }
 
-  const html = ({ t, state }) => {
+  const filterDictionary = (dictionary, search) => {
+    if (!search) {
+      return dictionary
+    }
+    
+    const searchLowerCased = search.toLowerCase()
+    
+    return dictionary.filter(({ original, translation }) => {
+      return original.toLowerCase().includes(searchLowerCased)
+        || translation.toLowerCase().includes(searchLowerCased)
+    })
+  }
+  
+  const html = ({ t, state, search }) => {
     const { foldersEntries, currentFolderId } = state
     const dictionary = foldersEntries[currentFolderId]
     const $list = dictionary
-      ? renderList(dictionary)
+      ? renderList(filterDictionary(dictionary, search))
       : `<br/><pll-typography variant="subtitle" text="${t.emptyPlaceholder}"></pll-typography>`
 
     return `
@@ -69,11 +82,11 @@
           ${$list}
         </ol>
         <div id="entries-actions">
-          <button is="pll-button" data-variant="back" id="btn-exit-folder" @onClick="exitFolder">
+          <button is="pll-button" data-color="back" id="btn-exit-folder" data-listen-on-Click="exitFolder">
             <img src="/shared-resources/components/words-view/exit-folder.svg" alt="Exit current folder">
             ${t.exitFolder}
           </button>
-          <button is="pll-button" data-variant="add" id="btn-add-word" @onClick="createNewWord">
+          <button is="pll-button" data-color="add" id="btn-add-word" data-listen-on-Click="createNewWord">
             <img src="/shared-resources/components/words-view/add-word.svg" alt="Add new word to Learn!">
             ${t.openAddWordForm}
           </button>
@@ -81,46 +94,9 @@
     `
   }
 
-  const translatesEN = {
-    original: 'Original',
-    translation: 'Translation',
-    actions: 'Actions',
-    emptyPlaceholder: 'No words yet. Add some!',
-    exitFolder: 'Exit folder',
-    openAddWordForm: 'Add new word!',
-    confirmDeleteMsg: 'Are you sure you want to delete this item?',
-  }
-
-  const translatesUK = {
-    original: 'Оригінал',
-    translation: 'Переклад',
-    actions: 'Дії',
-    emptyPlaceholder: 'Ще немає слів. Додайте!',
-    exitFolder: 'Вийти з папки',
-    openAddWordForm: 'Додати нове слово!',
-    confirmDeleteMsg: 'Ви впевнені, що хочете видалити цей елемент?',
-  }
-
-  const translatesZH = {
-    folderName: '文件夹名称',
-    original: '原文',
-    translation: '翻译',
-    actions: '操作',
-    emptyPlaceholder: '还没有单词。添加一些！',
-    exitFolder: '退出文件夹',
-    openAddWordForm: '添加新单词！',
-    confirmDeleteMsg: '您确定要删除此项吗？',
-  }
-
-  const translates = {
-    en: translatesEN,
-    uk: translatesUK,
-    zh: translatesZH,
-  }
-
   const prevFoldersEntriesLength = {}
   AbacusLib.createWebComponent('words-view', {
-    translates,
+    hasTranslates: true,
 
     html,
     styleFilesURLs: [
@@ -145,11 +121,13 @@
         $word.classList.remove(classNameHidden)
       },
 
-      escapeHandler(ctx, event, $word, $input) {
+      escapeHandler(event) {
         if (event.key === 'Escape') {
           event.preventDefault()
-          ctx.methods.showLabel($word, $input)
-          document.removeEventListener('keydown', ctx.methods.escapeHandler)
+          const $input = this.$root.querySelector(`.todo-item-input:not(.${classNameHidden}})`)
+          const $word = $input.previousElementSibling
+          this.methods.showLabel($word, $input)
+          document.removeEventListener('keydown', this.methods.escapeHandler)
         }
       },
 
@@ -159,9 +137,7 @@
 
         ctx.methods.showInput($word, $input)
 
-        document.addEventListener('keydown', () => {
-          ctx.methods.escapeHandler(event, ctx, $word, $input)
-        })
+        document.addEventListener('keydown', ctx.methods.escapeHandler)
       },
 
       onEditSuccess(ctx, event) {
@@ -174,18 +150,13 @@
 
         if ($input.hasChanged) {
           const newValue = $input.value
-
           $word.textContent = newValue
 
           const statePayload = {
-            [$input.dataset['field-key']]: newValue,
+            [$input.dataset.fieldKey]: newValue,
           }
 
-          if ($input.dataset['type'] === 'folder') {
-            this.stateMutators.editFolder($input.dataset.index, statePayload)
-          } else {
-            this.stateMutators.editWord($input.dataset.index, statePayload)
-          }
+          this.stateMutators.editWord(ctx.state.currentFolderId, $input.dataset.index, statePayload)
         }
       },
 
@@ -223,10 +194,12 @@
         prevFoldersEntriesLength[currentFolderId] = entriesLength
 
         if (scroll) {
-          const $list = this.$root.querySelector('#body')
-          $list.scroll({
-            top: $list.scrollHeight,
-            behavior: 'smooth',
+          setTimeout(() => {
+            const $list = this.$root.querySelector('#body')
+            $list.scroll({
+              top: $list.scrollHeight,
+              behavior: 'smooth',
+            })
           })
         }
       }

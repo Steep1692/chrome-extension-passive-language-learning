@@ -6,5 +6,4 @@ export default {
   Toast: sharedPluginsPath + 'toast.min.js',
   Translator: sharedPluginsPath + 'translator.js',
   GooglePlatform: sharedPluginsPath + 'google-platform.js',
-  GsiClient: sharedPluginsPath + 'gsi-client.js',
 }

@@ -1,0 +1,29 @@
+{
+  "en": {
+    "original": "Original",
+    "translation": "Translation",
+    "actions": "Actions",
+    "emptyPlaceholder": "No words yet. Add some!",
+    "exitFolder": "Exit folder",
+    "openAddWordForm": "Add new word!",
+    "confirmDeleteMsg": "Are you sure you want to delete this item?"
+  },
+  "uk": {
+    "original": "Оригінал",
+    "translation": "Переклад",
+    "actions": "Дії",
+    "emptyPlaceholder": "Ще немає слів. Додайте!",
+    "exitFolder": "Вийти з папки",
+    "openAddWordForm": "Додати нове слово!",
+    "confirmDeleteMsg": "Ви впевнені, що хочете видалити цей елемент?"
+  },
+  "zh": {
+    "original": "原文",
+    "translation": "翻译",
+    "actions": "操作",
+    "emptyPlaceholder": "还没有单词。添加一些！",
+    "exitFolder": "退出文件夹",
+    "openAddWordForm": "添加新单词！",
+    "confirmDeleteMsg": "您确定要删除此项吗？"
+  }
+}

@@ -9,6 +9,7 @@ button {
     padding: 9px 0;
     box-sizing: border-box;
     border: none;
+    border-bottom: 4px solid transparent;
     background: none;
 
     cursor: pointer;
@@ -22,6 +23,7 @@ button:hover {
 
 button.active {
     background: rgba(255, 255, 255, 0.8);
+    border-bottom-color: var(--primary);
 }
 
 button img {

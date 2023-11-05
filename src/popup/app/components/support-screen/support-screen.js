@@ -1,18 +1,9 @@
 (() => {
   const html = ({ t }) => {
-    const iframeParams = new URLSearchParams({
-      yourName: t.yourName,
-      yourEmail: t.yourEmail,
-      yourMessage: t.yourMessage,
-      send: t.send,
-    }).toString()
-
     return (
-      `
-        <pll-typography variant="title" text="${t.title}"></pll-typography>
-        <pll-typography variant="body" text="${t.subtitle}"></pll-typography>
-        <iframe src="https://fs6.formsite.com/6WZf6v/lpeym893xo/index" frameborder="0"></iframe>
-      `
+      `<pll-typography variant="title" text="${t.title}"></pll-typography>
+      <pll-typography variant="body" text="${t.subtitle}"></pll-typography>
+      <iframe src="https://fs6.formsite.com/6WZf6v/lpeym893xo/index" frameborder="0"></iframe>`
     )
   }
 

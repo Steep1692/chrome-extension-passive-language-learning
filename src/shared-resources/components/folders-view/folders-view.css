@@ -82,7 +82,14 @@
 }
 
 
-.todo-item-field-wrap.folder {
+.btn-name {
+  position: relative;
+
+  height: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-column-gap: 6px;
+  align-items: center;
   background: none;
   border: none;
   border-radius: 14px;
@@ -92,7 +99,21 @@
   cursor: pointer;
 }
 
-.todo-item-field-wrap.folder:hover {
+.btn-name img {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-name .input {
+  position: absolute;
+  left: 26px;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  box-sizing: border-box;
+}
+
+.btn-name:hover {
     background-color: rgba(228, 228, 228, 0.69);
 }
 
@@ -154,28 +175,8 @@
   background-color: #fff;
 }
 
-.todo-item-input {
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  box-sizing: border-box;
-}
-
-.todo-item-input.hidden {
-  visibility: hidden;
-}
-
-#btn-add-folder,
-#entries-actions {
+#btn-add-folder {
   position: sticky;
   bottom: 8px;
   margin: 8px;
-}
-
-#entries-actions {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-column-gap: 10px;
 }

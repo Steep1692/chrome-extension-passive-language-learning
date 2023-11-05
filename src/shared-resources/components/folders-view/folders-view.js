@@ -1,38 +1,52 @@
 (() => {
-  const classNameHidden = 'hidden'
+  const filterFolders = (folders, search) => {
+    if (!search) {
+      return folders
+    }
 
-  const renderFolder = (index, type, { name, entriesId }) => {
-    return `<button class="todo-item-field-wrap folder" @onClick="onFolderClick" data-entries-id="${entriesId}">
-      <span class="${type}">
+    const searchLowerCased = search.toLowerCase()
+
+    return folders.filter(({ name }) => {
+      return name.toLowerCase().includes(searchLowerCased)
+    })
+  }
+
+  const renderFolder = (index, type, { id, name, entriesId }, editId) => {
+    const isEditFolder = editId === id
+
+    return `<button class="btn-name" data-listen-on-Click="onFolderClick" data-entries-id="${entriesId}">
         <img src="/shared-resources/components/folders-view/folder.svg" alt="Folder">
-        ${name}
-      </span>
-      <input 
-        class="todo-item-input ${classNameHidden}" 
-        type="text" 
-        value="${name}"
-        data-index="${index}"
-        data-field-key="name"
-        data-type="folder"
-        @onChange="onInputChange"
-        @onFocus="onInputFocus"
-        @onBlur="onEditSuccess"
-        @onKeyDown="onInputKeyDown"
-      >
+        <span class="text">
+          ${isEditFolder ? `<input
+          class="input"
+          type="text"
+          value="${name}"
+          data-index="${index}"
+          data-id="${id}"
+          data-listen-on-Change="onInputChange"
+          data-listen-on-Focus="onInputFocus"
+          data-listen-on-Blur="onEditSuccess"
+          data-listen-on-KeyDown="onInputKeyDown"
+        >` : name}
+        </span>
     </button>`
   }
 
-  const renderFolderRow = (item, i) => {
+  const renderFolderRow = (item, i, editId) => {
     const odd = i % 2 !== 0
 
     return (
       `<li class="todo-item ${odd ? 'odd' : ''}">
          <div class="todo-item-inner folder">
-           ${renderFolder(i, 'folder', item)}
-           <button is="pll-button" data-variant="edit" data-index="${i}" @onClick="onClickEditFolder">
-            <img src="/shared-resources/components/folders-view/edit.svg" alt="Edit folder name">
-          </button>
-          <button is="pll-button" data-variant="delete" data-index="${i}" @onClick="deleteFolder">
+           ${renderFolder(i, 'folder', item, editId)}
+           ${
+              editId === item.id ? `<button data-key="delete" is="pll-button" data-variant="circle" data-color="back" data-id="${item.id}" data-listen-on-Click="cancelEditing">
+                  <img src="/shared-resources/components/folders-view/cross.svg" alt="Cancel edit folder name">
+                </button>`: `<button data-key="edit" is="pll-button" data-variant="circle" data-color="edit" data-id="${item.id}" data-listen-on-Click="onClickEditFolder">
+                    <img src="/shared-resources/components/folders-view/edit.svg" alt="Edit folder name">
+                  </button>`
+            }
+          <button is="pll-button" data-variant="circle" data-color="delete" data-index="${i}" data-listen-on-Click="deleteFolder">
             <img src="/shared-resources/components/folders-view/delete.svg" alt="Delete folder">
           </button>
         </div>
@@ -40,23 +54,22 @@
     )
   }
 
-  const renderFolderList = (folders) => {
+  const renderFolderList = (folders, editId) => {
     let $out = ''
 
     for (let i = 0; i < folders.length; i++) {
-      $out += renderFolderRow(folders[i], i)
+      $out += renderFolderRow(folders[i], i, editId)
     }
 
     return $out
   }
 
-
-  const html = ({ t, state, classnames }) => {
+  const html = ({ t, state, search, localState, classnames }) => {
     const { folders, currentFolderId } = state
-    const $list = renderFolderList(folders)
+    const $list = renderFolderList(filterFolders(folders, search), localState.editId)
 
-    return `
-        <div id="head" class="${classnames({ 'folder-list': !currentFolderId, })}">
+    return (
+      `<div id="head" class="${classnames({ 'folder-list': !currentFolderId, })}">
             <div>#</div>
             <div>${t.folderName}</div>
             <div>${t.actions}</div>
@@ -64,64 +77,48 @@
         <ol id="body">
           ${$list}
         </ol>
-        <button id="btn-add-folder" is="pll-button" data-variant="add" @onClick="createNewFolder">
+        <button id="btn-add-folder" is="pll-button" data-color="add" data-listen-on-Click="createNewFolder">
           <img src="/shared-resources/components/folders-view/add-folder.svg" alt="Add folder">
           ${t.createNewFolder}
-        </button>
-    `
-  }
-
-  const translatesEN = {
-    folderName: 'Folder name',
-    actions: 'Actions',
-    createNewFolder: 'Create new folder',
-    confirmDeleteFolderMsg: 'Are you sure you want to delete this folder?',
-  }
-
-  const translatesUK = {
-    folderName: 'Назва папки',
-    actions: 'Дії',
-    createNewFolder: 'Створити нову папку',
-    confirmDeleteFolderMsg: 'Ви впевнені, що хочете видалити цю папку?',
-  }
-
-  const translatesZH = {
-    folderName: '文件夹名称',
-    actions: '操作',
-    createNewFolder: '创建新文件夹',
-    confirmDeleteFolderMsg: '您确定要删除此文件夹吗？',
-  }
-
-  const translates = {
-    en: translatesEN,
-    uk: translatesUK,
-    zh: translatesZH,
+        </button>`
+    )
   }
 
   let prevFoldersLength = 0
-  const prevFoldersEntriesLength = {}
   AbacusLib.createWebComponent('folders-view', {
-    translates,
+    hasTranslates: true,
 
     html,
     styleFilesURLs: [
       'default',
     ],
 
+    localState: {
+      editId: null,
+    },
     methods: {
       onFolderClick(ctx, event) {
+        if (ctx.localState.editId) {
+          return
+        }
+
         const entriesId = event.currentTarget.getAttribute('data-entries-id')
         ctx.stateMutators.setCurrentFolderId(entriesId)
       },
       onClickEditFolder(ctx, event) {
-        const $word = event.currentTarget.parentNode.querySelector('span')
-        const $input = event.currentTarget.parentNode.querySelector('input')
+        const id = event.currentTarget.getAttribute('data-id')
 
-        ctx.methods.showInput($word, $input)
+        ctx.setLocalState({ editId: id })
 
-        document.addEventListener('keydown', (event) => {
-          ctx.methods.escapeHandler(ctx, event, $word, $input)
+        requestAnimationFrame(() => {
+          const $input = ctx.$root.querySelector(`input[data-id="${id}"]`)
+          $input.focus()
+          $input.select()
         })
+
+        document.addEventListener('keydown', ctx.methods.escapeHandler)
+
+        document.activeElement.blur()
       },
       createNewFolder(ctx) {
         ctx.stateMutators.createNewFolder()
@@ -129,50 +126,33 @@
       deleteFolder(ctx, event) {
         const index = event.currentTarget.getAttribute('data-index')
 
-        const t = translates[this.state.config.lang]
+        const t = ctx.translates[this.state.config.lang]
         confirm(t.confirmDeleteFolderMsg) && ctx.stateMutators.deleteFolder(index)
       },
 
-      showInput($word, $input) {
-        $word.classList.add(classNameHidden)
-        $input.classList.remove(classNameHidden)
-        $input.focus()
-      },
-      showLabel($word, $input) {
-        $input.classList.add(classNameHidden)
-        $word.classList.remove(classNameHidden)
+      cancelEditing(ctx) {
+        ctx.setLocalState({ editId: null })
+        document.removeEventListener('keydown', ctx.methods.escapeHandler)
       },
 
-      escapeHandler(ctx, event, $word, $input) {
+      escapeHandler(event) {
         if (event.key === 'Escape') {
           event.preventDefault()
-          ctx.methods.showLabel($word, $input)
-          document.removeEventListener('keydown', ctx.methods.escapeHandler)
+          this.methods.cancelEditing(this)
         }
       },
 
       onEditSuccess(ctx, event) {
+        ctx.methods.cancelEditing(ctx, event)
+
         const $input = event.currentTarget
-        const $word = $input.previousElementSibling
-
-        document.removeEventListener('keydown', ctx.methods.escapeHandler)
-
-        ctx.methods.showLabel($word, $input)
 
         if ($input.hasChanged) {
           const newValue = $input.value
 
-          $word.textContent = newValue
-
-          const statePayload = {
+          this.stateMutators.editFolder($input.dataset.index, {
             [$input.dataset['field-key']]: newValue,
-          }
-
-          if ($input.dataset['type'] === 'folder') {
-            this.stateMutators.editFolder($input.dataset.index, statePayload)
-          } else {
-            this.stateMutators.editWord($input.dataset.index, statePayload)
-          }
+          })
         }
       },
 
