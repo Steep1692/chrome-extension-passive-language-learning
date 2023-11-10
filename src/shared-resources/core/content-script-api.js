@@ -4,8 +4,8 @@ class ContentScriptApi {
     return chrome.tabs.sendMessage(tab.id, message)
   }
 
-  static getData() {
-    return ContentScriptApi.#emit({ type: 'get-data' })
+  static getInitStateData() {
+    return ContentScriptApi.#emit({ type: 'get-init-state-data' })
   }
 
   static async setData(data) {

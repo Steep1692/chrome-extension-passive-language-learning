@@ -1,0 +1,100 @@
+﻿    • 		And
+    • 		Or
+    • 		But
+    • 		Nor
+    • 		For
+    • 		Yet
+    • 		So
+    • 		Although
+    • 		Because
+    • 		Since
+    • 		Unless
+    • 		While
+    • 		Where
+    • 		When
+    • 		After
+    • 		Before
+    • 		If
+    • 		Unless
+    • 		Until
+    • 		Though
+    • 		Moreover
+    • 		Furthermore
+    • 		However
+    • 		Nevertheless
+    • 		Nonetheless
+    • 		Therefore
+    • 		Thus
+    • 		Meanwhile
+    • 		Still
+    • 		Hence
+    • 		Indeed
+    • 		Conversely
+    • 		Otherwise
+    • 		Rather
+    • 		Instead
+    • 		Besides
+    • 		Moreover
+    • 		Furthermore
+    • 		Additionally
+    • 		In addition
+    • 		In fact
+    • 		Yet
+    • 		Otherwise
+    • 		Instead
+    • 		Besides
+    • 		Nevertheless
+    • 		Nonetheless
+    • 		Conversely
+    • 		Furthermore
+    • 		Moreover
+    • 		In addition
+    • 		In fact
+    • 		Consequently
+    • 		Subsequently
+    • 		Accordingly
+    • 		Then
+    • 		Next
+    • 		Finally
+    • 		Therefore
+    • 		Thus
+    • 		However
+    • 		Nevertheless
+    • 		Nonetheless
+    • 		Conversely
+    • 		On the other hand
+    • 		In contrast
+    • 		Yet
+    • 		Still
+    • 		Meanwhile
+    • 		Meanwhile
+    • 		Simultaneously
+    • 		Consequently
+    • 		Therefore
+    • 		Thus
+    • 		Moreover
+    • 		Furthermore
+    • 		Additionally
+    • 		In addition
+    • 		However
+    • 		Nevertheless
+    • 		Nonetheless
+    • 		Conversely
+    • 		Meanwhile
+    • 		Still
+    • 		Yet
+    • 		Instead
+    • 		Otherwise
+    • 		Accordingly
+    • 		Consequently
+    • 		Therefore
+    • 		Thus
+    • 		Moreover
+    • 		Furthermore
+    • 		Additionally
+    • 		In addition
+    • 		In fact
+    • 		Nevertheless
+    • 		Nonetheless
+    • 		Conversely
+    • 		However

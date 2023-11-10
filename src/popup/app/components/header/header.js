@@ -1,17 +1,20 @@
 (() => {
   const html = ({classnames, state}) => {
     const path = state.router.path
-    const isOnBoarding = state.config.onboarded
+    const notOnboarded = !state.config.onboarded
 
-    if (!isOnBoarding) {
-      return ''
+    // <button class="${classnames({ 'active': path === 'home' })}" data-listen-on-Click="goHome">
+    //           <img src="/popup/app/components/header/home.svg" alt="Open home tab" />
+    //         </button>
+
+    if (notOnboarded) {
+      return (
+        `<pll-splash-text style="grid-column: 1/-1"></pll-splash-text>`
+      )
     }
 
     return (
-      `<button class="${classnames({ 'active': path === 'home' })}" data-listen-on-Click="goHome">
-          <img src="/popup/app/components/header/home.svg" alt="Open home tab" />
-        </button>
-       <button class="${classnames({ 'active': path === 'dictionary' })}" data-listen-on-Click="goDictionary">
+      `<button class="${classnames({ 'active': path === 'dictionary' })}" data-listen-on-Click="goDictionary">
           <img src="/popup/app/components/header/dictionary.svg" alt="Open dictionary tab" />
         </button>
         <button class="${classnames({ 'active': path === 'settings' })}" data-listen-on-Click="goSettings">

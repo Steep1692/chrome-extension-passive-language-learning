@@ -9,4 +9,6 @@ export default {
   SetupScreen: popupViewsPath + 'setup-screen/setup-screen.js',
   DonateScreen: popupViewsPath + 'donate-screen/donate-screen.js',
   SupportScreen: popupViewsPath + 'support-screen/support-screen.js',
+
+  ImportExport: popupViewsPath + 'import-export/import-export.js',
 }

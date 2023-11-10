@@ -1,5 +1,6 @@
 (() => {
   const html = ({ t, state, localState }) => {
+    const test = state.folders
     const $view = state.currentFolderId
       ? `<pll-words-view search="${localState.search}"></pll-words-view>`
       : `<pll-folders-view search="${localState.search}"></pll-folders-view>`

@@ -43,7 +43,7 @@
 
   const stateMutatorsData = ScriptManager.injectScriptToPage('/shared-resources/core/state-mutators.js')
 
-  const abacusLibData = ScriptManager.injectScriptToPage('/shared-resources/core/abacus-lib.js')
+  const abacusLibData = ScriptManager.injectScriptToPage('/shared-resources/core/abacus-lib/abacus-lib.js')
 
   const themeControllerData = ScriptManager.injectScriptToPage('/shared-resources/core/theme-controller.js')
 
@@ -61,7 +61,7 @@
 
     themeControllerData,
   ]).then(([res1, res2]) => {
-    ContentScriptApi.getData().then(({ state }) => {
+    ContentScriptApi.getInitStateData().then(({ state }) => {
       AbacusLib.init({
         state,
         stateMutators: StateMutators,
@@ -72,17 +72,16 @@
         },
         pluginInjections: res2.default,
 
-        onStateMutation: (mutatorName, ...args) => {
-          // Update theme when {config.theme} is changed
-          if (mutatorName === 'updateConfig') {
-            const [payload] = args
-            if (payload.theme) {
-              ThemeController.applyTheme(payload.theme)
-            }
+        onStateMutation: (mutationRecord) => {
+          const { prop, value, path } = mutationRecord
+          const pathJoined = path.join('.')
+
+          if (pathJoined === 'config' && prop === 'theme') {
+            ThemeController.applyTheme(value)
           }
 
           // Update state in ContentScriptApi
-          ContentScriptApi.setData(state)
+          ContentScriptApi.setData(mutationRecord)
         },
       })
 

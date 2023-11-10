@@ -11,23 +11,20 @@ class ScriptManager {
 }
 
 (async () => {
-  const isIgnoredOrigin = (state) => state.config.ignoredOrigins.includes(state.clientInfo.origin)
-  const isDisabled = (state) => state.config.disabledAtAll || isIgnoredOrigin(state)
+  const isIgnoredOrigin = (ignoredOrigins, constants) => ignoredOrigins.includes(constants.clientInfo.origin)
+  const isDisabled = (disabledAtAll, ignoredOrigins, constants) => disabledAtAll || isIgnoredOrigin(ignoredOrigins, constants)
 
   const disabledClassName = 'disabled'
-  const $body = document.body;
+  const $body = document.body
 
-  const disabledMarkupController = (state) => {
-      // Handle disabled UI state
-      if (isDisabled(state)) {
-        $body.classList.add(disabledClassName)
-      } else {
-        $body.classList.remove(disabledClassName)
-      }
+  const disabledMarkupController = (disabledAtAll, ignoredOrigins, constants) => {
+    // Handle disabled UI state
+    if (isDisabled(disabledAtAll, ignoredOrigins, constants)) {
+      $body.classList.add(disabledClassName)
+    } else {
+      $body.classList.remove(disabledClassName)
+    }
   }
-
-  // FIXME: Heavy operation
-  const removeProxies = (obj) => JSON.parse(JSON.stringify(obj))
 
   const componentInjections = import('/popup/app/components/injections.js')
   const sharedComponentInjectionsData = import('/shared-resources/components/injections.js')
@@ -38,7 +35,7 @@ class ScriptManager {
   const stateMutatorsData = ScriptManager.injectScriptToPage('/shared-resources/core/state-mutators.js')
   const themeControllerData = ScriptManager.injectScriptToPage('/shared-resources/core/theme-controller.js')
 
-  const abacusLibData = ScriptManager.injectScriptToPage('/shared-resources/core/abacus-lib.js')
+  const abacusLibData = ScriptManager.injectScriptToPage('/shared-resources/core/abacus-lib/abacus-lib.js')
 
   Promise.all([
     componentInjections,
@@ -54,8 +51,9 @@ class ScriptManager {
     themeControllerData,
   ]).then(async ([res1, res2, res3, res4]) => {
 
-    ContentScriptApi.getData().then(({ state }) => {
+    ContentScriptApi.getInitStateData().then(({ state, constants }) => {
       AbacusLib.init({
+        constants,
         state,
         stateMutators: StateMutators,
         componentInjections: {
@@ -65,24 +63,30 @@ class ScriptManager {
         pluginInjections: res3.default,
         serviceInjections: res4.default,
 
-        onStateMutation: (mutatorName, ...args) => {
-          // Update theme when {config.theme} is changed
-          if (mutatorName === 'updateConfig') {
-            const [payload] = args
-            if (payload.theme) {
-              ThemeController.applyTheme(payload.theme)
-            }
+        onStateMutation: (mutationRecord) => {
+          const { prop, value, path } = mutationRecord
+          const pathJoined = path.join('.')
 
-            disabledMarkupController(state)
+          if (pathJoined === 'config' && prop === 'theme') {
+            ThemeController.applyTheme(value)
+          }
+
+          if (pathJoined === 'config.ignoredOrigins' || (pathJoined === 'config' && prop === 'disabledAtAll')) {
+            const disabledAtAll = state.config.disabledAtAll
+            const ignoredOrigins = state.config.ignoredOrigins
+            disabledMarkupController(disabledAtAll, ignoredOrigins, constants)
           }
 
           // Update state in ContentScriptApi
-          ContentScriptApi.setData(removeProxies(state))
+          ContentScriptApi.setData(mutationRecord)
         },
       })
 
       ThemeController.applyTheme(state.config.theme)
-      disabledMarkupController(state)
+
+      const disabledAtAll = state.config.disabledAtAll
+      const ignoredOrigins = state.config.ignoredOrigins
+      disabledMarkupController(disabledAtAll, ignoredOrigins, constants)
 
       if (!state.config.onboarded) {
         StateMutators.setRoute(state, 'settings')

@@ -3,10 +3,10 @@
 
   const removeUrlProtocol = (url) => url.replace(/https?:\/\//, '')
 
-  const html = ({ t, state }) => {
-    const disableOnThisWebsite = state.config.ignoredOrigins.includes(state.clientInfo.origin)
+  const html = ({ t, state, constants }) => {
+    const disableOnThisWebsite = state.config.ignoredOrigins.includes(constants.clientInfo.origin)
     const disableAtAll = state.config.disabledAtAll
-    const origin = state.clientInfo.origin ?? ''
+    const origin = constants.clientInfo.origin ?? ''
 
     return `
       <label class="switch">
@@ -130,27 +130,22 @@
     `,
 
     methods: {
-      disableOnThisWebsite: function (ctx, event) {
+      disableOnThisWebsite(ctx, event) {
         const ignoredOriginsNew = ctx.state.config.ignoredOrigins
-        const origin = ctx.state.clientInfo.origin
+        const origin = ctx.constants.clientInfo.origin
 
         if (event.currentTarget.checked) {
-          ignoredOriginsNew.push(origin)
+          ctx.stateMutators.disableForWebsite(origin)
         } else {
-          const index = ignoredOriginsNew.indexOf(origin)
-          if (index !== -1) {
-            ignoredOriginsNew.splice(index, 1)
-          }
+          ctx.stateMutators.enableForWebsite(origin)
         }
-
-        return ctx.stateMutators.updateConfig({
-          ignoredOrigins: ignoredOriginsNew,
-        })
       },
       disableAtAll: function (ctx, event) {
-        return ctx.stateMutators.updateConfig({
-          disabledAtAll: event.currentTarget.checked,
-        })
+        if (event.currentTarget.checked) {
+          ctx.stateMutators.disableAtAll()
+        } else {
+          ctx.stateMutators.enableAtAll()
+        }
       }
     },
   })

@@ -118,11 +118,15 @@ button[is="pll-button"][data-color="delete"] {
 }
 
 button[is="pll-button"][data-color="edit"] {
-    background-color: #4caf50;
+    background-color: #49abd3;
+}
+
+button[is="pll-button"][data-color="cancel"] {
+    background-color: rgba(0, 0, 0, 0.37);
 }
 
 button[is="pll-button"][data-color="add"] {
-    background-color: #49abd3;
+    background-color: #4caf50;
 }
 
 button[is="pll-button"][data-color="back"] {
@@ -157,4 +161,7 @@ button[is="pll-button"]:not([data-variant="circle"]) {
     color: var(--text-light);
     padding: 12px 8px;
     border-radius: 16px;
+
+    white-space: normal;
+    text-align: center;
 }

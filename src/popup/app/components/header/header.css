@@ -1,7 +1,12 @@
 :host {
     box-sizing: border-box;
+    height: 44px;
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);
+}
+
+pll-splash-text {
+    font-size: 1.5em;
 }
 
 button {
@@ -29,6 +34,12 @@ button.active {
 button img {
     width: 1.5em;
     height: 1.5em;
+}
+
+button:disabled {
+    opacity: 0;
+    cursor: default;
+    pointer-events: none;
 }
 
 :host > button:not(:fist-child) {

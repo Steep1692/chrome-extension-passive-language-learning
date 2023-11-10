@@ -1,0 +1,7 @@
+﻿    • 		Myself
+    • 		Yourself
+    • 		Himself
+    • 		Herself
+    • 		Itself
+    • 		Ourselves
+    • 		Themselves

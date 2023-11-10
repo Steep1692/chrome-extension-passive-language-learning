@@ -173,7 +173,7 @@
       },
 
       deleteWord(ctx, event) {
-        const t = translates[this.state.config.lang]
+        const t = this.translates[this.state.config.lang]
         const i = event.currentTarget.dataset.index
 
         if (confirm(t.confirmDeleteMsg)) {

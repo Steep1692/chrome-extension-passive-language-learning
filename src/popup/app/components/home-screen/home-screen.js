@@ -71,7 +71,7 @@
 
     services: ['Google:module'],
     onAfterFirstRender(ctx) {
-      ctx.methods.googleO2auth(ctx)
+      // ctx.methods.googleO2auth(ctx)
     },
   })
 })()

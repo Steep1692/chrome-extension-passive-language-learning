@@ -4,6 +4,7 @@
   HTMLElementClassToTagName.set(HTMLInputElement, 'input')
 
   const init = ({
+                  constants,
                   state,
                   stateMutators,
                   onStateMutation,
@@ -83,10 +84,17 @@
 
     class ReactiveState {
       static preventReactivityGetHandler = false
-      static REACTIVITY_PROXY_TARGET_KEY = Symbol('link on the original target object')
+      static SYMBOL_PROXY_TARGET = Symbol('proxy target')
+      static SYMBOL_OBJ_PARENT = Symbol('object parent in state')
       static reactionReceiverID = null
 
-      static proxyState = (obj) => {
+      static needsProxying = (value) => {
+        return typeof value === 'object'
+          && value !== null
+          && !(value instanceof Promise)
+      }
+
+      static proxyState = (obj, parentObj) => {
         let setInProcess = false
         let proxyingChildren
 
@@ -108,7 +116,31 @@
             const res = Reflect.set(...arguments)
 
             if (!proxyingChildren) {
+              if (ReactiveState.needsProxying(value)) {
+                target[prop] = ReactiveState.proxyState(value, target)
+              }
+
               Reactivity.handleReactivePropChange(target, prop, value)
+              const mutationRecord = {
+                path: [],
+                prop,
+                value,
+              }
+
+              let parent = target[ReactiveState.SYMBOL_OBJ_PARENT]
+              let child = target[ReactiveState.SYMBOL_PROXY_TARGET]
+
+              while (parent) {
+                const parentProp = Reflect.ownKeys(parent).find((key, _, arr) => {
+                  return parent[key]?.[ReactiveState.SYMBOL_PROXY_TARGET] === child
+                })
+
+                mutationRecord.path.unshift(parentProp)
+                child = parent[ReactiveState.SYMBOL_PROXY_TARGET]
+                parent = parent[ReactiveState.SYMBOL_OBJ_PARENT]
+              }
+
+              onStateMutation?.(mutationRecord)
             }
 
             setInProcess = false
@@ -117,18 +149,19 @@
           },
         }
 
-        obj[ReactiveState.REACTIVITY_PROXY_TARGET_KEY] = obj
+        obj[ReactiveState.SYMBOL_PROXY_TARGET] = obj
+
+        if (parentObj) {
+          obj[ReactiveState.SYMBOL_OBJ_PARENT] = parentObj
+        }
+
         const objProxy = new Proxy(obj, handler)
 
         proxyingChildren = true
         for (const objKey in objProxy) {
           const value = objProxy[objKey]
-          if (
-            typeof value === 'object'
-            && value !== null
-            && !(value instanceof Promise)
-          ) {
-            objProxy[objKey] = ReactiveState.proxyState(value)
+          if (ReactiveState.needsProxying(value)) {
+            objProxy[objKey] = ReactiveState.proxyState(value, objProxy)
           }
         }
         proxyingChildren = false
@@ -547,7 +580,6 @@
     }
     // ==============
 
-
     const createWebComponent = (name, {
       dontUseShadowDOM,
 
@@ -581,6 +613,7 @@
         $root
 
         localState
+        constants
         state
         stateMutators
 
@@ -589,6 +622,7 @@
         constructor() {
           super()
           this.localState = localState ?? null
+          this.constants = constants ?? null
 
           if (dontUseShadowDOM || extendsElement) {
             this.$root = this
@@ -641,9 +675,8 @@
             for (const key in stateMutators) {
               const state = ReactiveState.getWithoutReactivity(ReactiveState, 'state')
 
-              this.stateMutators[key] = function() {
-                stateMutators[key].bind(this)(state, ...arguments)
-                onStateMutation?.(key, ...arguments)
+              this.stateMutators[key] = (...args) => {
+                stateMutators[key].bind(this)(state, ...args)
               }
             }
           }
@@ -771,7 +804,7 @@
           Reactivity.registerCallback(name, this.render.bind(this))
 
           if (translates) {
-            const configObj = ReactiveState.getWithoutReactivity(this, 'state', 'config', ReactiveState.REACTIVITY_PROXY_TARGET_KEY)
+            const configObj = ReactiveState.getWithoutReactivity(this, 'state', 'config', ReactiveState.SYMBOL_PROXY_TARGET)
 
             Reactivity.registerReactiveProp(name, configObj, 'lang')
           }
@@ -793,6 +826,7 @@
           const props = {
             ctx: this,
             t: translations,
+            constants,
             state,
             classnames,
             localState: this.localState,
@@ -898,6 +932,8 @@
     AbacusLib.createWebComponent = createWebComponent
 
     findAndInjectComponentsInNode(document.body)
+
+    window.AbacusLib.state = state
   }
 
   window.AbacusLib = {

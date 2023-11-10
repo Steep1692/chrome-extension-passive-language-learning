@@ -13,14 +13,24 @@
       </button>`
     ) : ''
 
+    const $enableDisable = showBtnSubmit ? '' : (
+      `<pll-config></pll-config>`
+    )
+
+    const $importExport = showBtnSubmit ? '' : (
+      `<pll-import-export></pll-import-export>`
+    )
+
     return (
       `<pll-typography variant="title" text="${t.title}"></pll-typography>
   
       <div class="content">
-          <pll-config></pll-config>
+          ${$enableDisable}
           <pll-language-select title="${t.yourLang}"></pll-language-select>
           <pll-languages-view></pll-languages-view>
       </div>
+      
+      ${$importExport}
       
       ${$btnSubmit}`
     )

@@ -40,7 +40,7 @@
          <div class="todo-item-inner folder">
            ${renderFolder(i, 'folder', item, editId)}
            ${
-              editId === item.id ? `<button data-key="delete" is="pll-button" data-variant="circle" data-color="back" data-id="${item.id}" data-listen-on-Click="cancelEditing">
+              editId === item.id ? `<button data-key="delete" is="pll-button" data-variant="circle" data-color="cancel" data-id="${item.id}" data-listen-on-Click="cancelEditing">
                   <img src="/shared-resources/components/folders-view/cross.svg" alt="Cancel edit folder name">
                 </button>`: `<button data-key="edit" is="pll-button" data-variant="circle" data-color="edit" data-id="${item.id}" data-listen-on-Click="onClickEditFolder">
                     <img src="/shared-resources/components/folders-view/edit.svg" alt="Edit folder name">
@@ -66,7 +66,9 @@
 
   const html = ({ t, state, search, localState, classnames }) => {
     const { folders, currentFolderId } = state
-    const $list = renderFolderList(filterFolders(folders, search), localState.editId)
+    const foldersFixed = folders.filter((f) => f)
+    const foldersFiltered = filterFolders(foldersFixed, search)
+    const $list = renderFolderList(foldersFiltered, localState.editId)
 
     return (
       `<div id="head" class="${classnames({ 'folder-list': !currentFolderId, })}">

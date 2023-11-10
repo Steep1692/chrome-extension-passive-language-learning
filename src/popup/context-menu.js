@@ -14,7 +14,7 @@
 
     chrome.contextMenus.create({
       id: MENU_ITEM.ADD_WORD,
-      title: "Add word to dictionary",
+      title: "Додати слово до словника",
       contexts: ["selection"], // You can specify other contexts like "page", "link", etc.
     });
   });

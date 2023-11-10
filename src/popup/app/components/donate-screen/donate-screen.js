@@ -1,11 +1,9 @@
 (() => {
-  const html = function ({ t, state }) {
+  const html = function ({ t, state, constants }) {
     return (
-      `
-        <pll-typography variant="title" text="${t.title}"></pll-typography>
+      `<pll-typography variant="title" text="${t.title}"></pll-typography>
         <pll-typography variant="subtitle" text="${t.subtitle}"></pll-typography>
-        <pll-payment url="${state.constants.paymentServiceLink}"></pll-payment>
-      `
+        <pll-payment url="${constants.payment.serviceLink}"></pll-payment>`
     )
   }
 
