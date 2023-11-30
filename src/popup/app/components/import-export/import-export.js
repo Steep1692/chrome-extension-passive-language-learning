@@ -23,7 +23,7 @@
           <img src="/popup/app/components/import-export/export.svg" alt="Export">
           ${t.export}
         </button>
-        <input id="fileInput" type="file" style="visibility: hidden">`
+        <input id="fileInput" type="file" style="position: absolute; visibility: hidden">`
     )
   }
 

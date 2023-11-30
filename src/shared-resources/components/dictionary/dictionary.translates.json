@@ -1,11 +1,15 @@
 {
   "en": {
-    "searchPlaceholder": "Search…"
+    "searchFolder": "Search a folder by name…",
+    "searchWords" : "Search a word…"
+
   },
   "uk": {
-    "searchPlaceholder": "Пошук…"
+    "searchFolder": "Пошук папки за назвою…",
+    "searchWords" : "Пошук слова…"
   },
   "zh": {
-    "searchPlaceholder": "搜索…"
+    "searchFolder": "搜索文件夹名称…",
+    "searchWords" : "搜索词…"
   }
 }

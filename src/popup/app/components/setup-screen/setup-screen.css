@@ -14,5 +14,5 @@
   display: grid;
   justify-items: center;
   align-content: flex-start;
-  grid-row-gap: 24px;
+  grid-row-gap: 8px;
 }

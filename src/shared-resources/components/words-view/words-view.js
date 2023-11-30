@@ -5,7 +5,7 @@
     return `<div class="todo-item-field-wrap">
       <span
         class="field ${type}" 
-        data-listen-on-Click="onWordClick" 
+        data-listen-on-Click="editWord" 
       >${word}</span>
       <input 
         class="todo-item-input ${classNameHidden}" 
@@ -94,7 +94,6 @@
     `
   }
 
-  const prevFoldersEntriesLength = {}
   AbacusLib.createWebComponent('words-view', {
     hasTranslates: true,
 
@@ -106,6 +105,23 @@
     methods: {
       createNewWord(ctx) {
         ctx.stateMutators.createNewWord(ctx.state.currentFolderId)
+
+        requestAnimationFrame(() => {
+          const $list = this.$root.querySelector('#body')
+
+          const delta = $list.scrollHeight - $list.scrollTop - $list.offsetHeight
+          const delay = Math.min(1000, delta)
+
+          $list.scroll({
+            top: $list.scrollHeight,
+            behavior: 'smooth',
+          })
+
+          setTimeout(() => {
+            const $word = $list.lastElementChild.querySelector('.original')
+            ctx.methods.enableEditingByWordNode(ctx, $word)
+          }, delay)
+        })
       },
       exitFolder(ctx) {
         ctx.stateMutators.setCurrentFolderId(null)
@@ -121,30 +137,20 @@
         $word.classList.remove(classNameHidden)
       },
 
-      escapeHandler(event) {
-        if (event.key === 'Escape') {
-          event.preventDefault()
-          const $input = this.$root.querySelector(`.todo-item-input:not(.${classNameHidden}})`)
-          const $word = $input.previousElementSibling
-          this.methods.showLabel($word, $input)
-          document.removeEventListener('keydown', this.methods.escapeHandler)
-        }
-      },
-
-      onWordClick(ctx, event) {
-        const $word = event.currentTarget
+      enableEditingByWordNode(ctx, $word) {
         const $input = $word.nextElementSibling
 
         ctx.methods.showInput($word, $input)
+      },
 
-        document.addEventListener('keydown', ctx.methods.escapeHandler)
+      editWord(ctx, event) {
+        const $word = event.currentTarget
+        ctx.methods.enableEditingByWordNode(ctx, $word)
       },
 
       onEditSuccess(ctx, event) {
         const $input = event.currentTarget
         const $word = $input.previousElementSibling
-
-        document.removeEventListener('keydown', ctx.methods.escapeHandler)
 
         ctx.methods.showLabel($word, $input)
 
@@ -160,9 +166,28 @@
         }
       },
 
+      goToNeighbourInput(ctx, $inputCurrent, forward) {
+        const element = forward ? 'previousElementSibling' : 'nextElementSibling'
+        const $word = $inputCurrent.parentNode[element]?.firstElementChild
+
+        if ($word) {
+          ctx.methods.enableEditingByWordNode(ctx, $word)
+        }
+      },
+
       onInputKeyDown(ctx, event) {
         if (event.key === 'Enter') {
           ctx.methods.onEditSuccess(ctx, event)
+        } else if (event.key === 'Tab') {
+          event.preventDefault()
+
+          ctx.methods.onEditSuccess(ctx, event)
+          ctx.methods.goToNeighbourInput(ctx, event.currentTarget, event.shiftKey)
+        } else if (event.key === 'Escape') {
+          event.preventDefault()
+          const $input = event.currentTarget
+          const $word = $input.previousElementSibling
+          ctx.methods.showLabel($word, $input)
         }
       },
       onInputChange(ctx, event) {
@@ -182,27 +207,5 @@
         }
       },
     },
-
-    stateEffects: [
-      function scrollBottomWhenItemAdded () {
-        const foldersEntries = this.state.foldersEntries
-        const currentFolderId = this.state.currentFolderId
-
-        const entriesLength = foldersEntries[currentFolderId]?.length ?? 0
-
-        const scroll = entriesLength > prevFoldersEntriesLength[currentFolderId]
-        prevFoldersEntriesLength[currentFolderId] = entriesLength
-
-        if (scroll) {
-          setTimeout(() => {
-            const $list = this.$root.querySelector('#body')
-            $list.scroll({
-              top: $list.scrollHeight,
-              behavior: 'smooth',
-            })
-          })
-        }
-      }
-    ],
   })
 })()

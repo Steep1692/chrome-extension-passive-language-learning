@@ -4,44 +4,69 @@
   const removeUrlProtocol = (url) => url.replace(/https?:\/\//, '')
 
   const html = ({ t, state, constants }) => {
-    const disableOnThisWebsite = state.config.ignoredOrigins.includes(constants.clientInfo.origin)
-    const disableAtAll = state.config.disabledAtAll
     const origin = constants.clientInfo.origin ?? ''
+    const disableOnThisWebsite = state.config.ignoredOrigins.includes(origin)
+    const disableAtAll = state.config.disabledAtAll
+    const pronounceWord = state.config.pronounceWord
+    const highlightWords = state.config.highlightWords
 
     return `
-      <label class="switch">
-              <span class="website">
-                <img src="${FAVICON_BY_DOMAIN_URL_API_URL}${origin}" alt="logo">
-                ${t.disable} ${removeUrlProtocol(origin)}
-              </span>
-              
-              <input ${disableOnThisWebsite && 'checked'} type="checkbox" data-listen-on-Change="disableOnThisWebsite">
-          </label>
+        <pll-checkbox
+            checked="${disableOnThisWebsite}"
+            label="${t.disable + ' ' + removeUrlProtocol(origin)}"
+            icon-src="${FAVICON_BY_DOMAIN_URL_API_URL}${origin}"
+            data-listen-on-change="disableOnThisWebsite"
+        ></pll-checkbox>
 
-          <label class="switch">
-                <span class="website">
-                  <img src="https://cdn.icon-icons.com/icons2/1369/PNG/512/-all-inclusive_89887.png" width="16" height="16">
-                  ${t.disable} ${t.allWebsites}
-              </span>
-              
-              <input ${disableAtAll && 'checked'} type="checkbox" data-listen-on-Change="disableAtAll">
-          </label>
+        <pll-checkbox
+            checked="${disableAtAll}"
+            label="${t.disable + ' ' + t.allWebsites}"
+            icon-src="https://cdn.icon-icons.com/icons2/1369/PNG/512/-all-inclusive_89887.png"
+            data-listen-on-change="disableAtAll"
+        ></pll-checkbox>
+
+        <hr>
+        
+        <pll-checkbox
+            checked="${pronounceWord}"
+            label="${t.pronounceWord}"
+            icon-src="/popup/app/components/config/speaker${pronounceWord ? '' : '-muted'}.svg"
+            data-listen-on-change="changePronounceWord"
+        ></pll-checkbox>
+          
+        <pll-checkbox
+            checked="${highlightWords}"
+            label="${t.highlightWords}"
+            icon-src="/popup/app/components/config/highlight-${highlightWords ? 'on' : 'off'}.svg"
+            data-listen-on-change="changeHighlightWords"
+        ></pll-checkbox>
+        <hr>
+        <pll-colors-settings></pll-colors-settings>
     `
   }
 
   const translatesEN = {
     disable: 'DISABLE for',
     allWebsites: 'All Websites',
+
+    pronounceWord: 'Pronounce word on mouse hover',
+    highlightWords: 'Highlight words',
   }
 
   const translatesUK = {
     disable: 'Відключити для',
     allWebsites: 'Всіх веб-сайтів',
+
+    pronounceWord: 'Вимовляти слово при наведенні миші',
+    highlightWords: 'Підсвічувати слова',
   }
 
   const translatesZH = {
     disable: '禁用',
     allWebsites: '所有网站',
+
+    pronounceWord: '鼠标悬停时发音',
+    highlightWords: '高亮显示单词',
   }
 
   const translates = {
@@ -66,66 +91,11 @@
           background: rgba(255, 255, 224, 0.82);
       }
       
-      img {
-          width: 1em;
-          height: 1em;
-      }
-      
-      label {
-          display: grid;
-          justify-content: space-between;
-          padding: 6px 9px;
-      
-          grid-column-gap: 5px;
-          align-content: baseline;
-          grid-template-columns: 1fr auto;
-      
-          font-size: 14px;
-          font-weight: 700;
-          text-align: left;
-      
-          cursor: pointer;
-          user-select: none;
-          transition: background-color 0.1s;
-      }
-      
-      label:hover {
-          background-color: rgba(158, 158, 158, 0.49);
-      }
-      
-      select {
-          padding: 6px 12px;
-          border-radius: 6px;
-          border: 1px solid gray;
-      
-          font-size: 16px;
-          line-height: 1;
-      
-          background: url(http://cdn1.iconfinder.com/data/icons/cc_mono_icon_set/blacks/16x16/br_down.png) no-repeat right #fff;
-          -webkit-appearance: none;
-          background-position-x: 95%;
-          background-size: 8px;
-      
-          cursor: pointer;
-      }
-      
-      .website {
-          display: grid;
-          grid-template-columns: auto 1fr;
-          align-content: center;
-          grid-column-gap: 5px;
-      
-          word-break: break-all;
-      
-          color: #2b2bff;
-      }
-      
-      input[type="checkbox"] {
-          width: 18px;
-          height: 18px;
-          margin: 0;
-      
-          cursor: pointer;
+      hr {
+          width: 100%;
+          background: darkkhaki;
+          height: 1px;
+          border: none;
       }
     `,
 
@@ -134,19 +104,27 @@
         const ignoredOriginsNew = ctx.state.config.ignoredOrigins
         const origin = ctx.constants.clientInfo.origin
 
-        if (event.currentTarget.checked) {
+        if (event.detail.checked) {
           ctx.stateMutators.disableForWebsite(origin)
         } else {
           ctx.stateMutators.enableForWebsite(origin)
         }
       },
       disableAtAll: function (ctx, event) {
-        if (event.currentTarget.checked) {
+        if (event.detail.checked) {
           ctx.stateMutators.disableAtAll()
         } else {
           ctx.stateMutators.enableAtAll()
         }
-      }
+      },
+
+      changePronounceWord: (ctx, event) => {
+        ctx.stateMutators.changePronounceWord(event.detail.checked)
+      },
+
+      changeHighlightWords: (ctx, event) => {
+        ctx.stateMutators.changeHighlightWords(event.detail.checked)
+      },
     },
   })
 })()

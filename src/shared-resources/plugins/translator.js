@@ -1,12 +1,15 @@
 class Translator {
   static #API_URL = 'https://translate.googleapis.com/translate_a/single?client=gtx&sl={from}&tl={to}&dt=t&q={text}'
 
-  #fetchService
+  fetchService = null
   #from
   #to
 
-  constructor(fetchService, from, to) {
-    this.setFetchServer(fetchService)
+  constructor(from, to, fetchService) {
+    if (fetchService) {
+      this.setFetchService(fetchService)
+    }
+
     this.updateLanguages(from, to)
   }
 
@@ -15,8 +18,8 @@ class Translator {
     .replace('{to}', this.#to)
     .replace('{text}', text)
 
-  setFetchServer(fetchService) {
-    this.#fetchService = fetchService
+  setFetchService(fetchService) {
+    this.fetchService = fetchService
   }
 
   updateLanguages(from, to) {
@@ -25,7 +28,8 @@ class Translator {
   }
 
   getTranslation = async (text, options) => {
-    const response = await this.#fetchService(this.#getApiUrl(text), options)
+    const fetchService = this.fetchService || fetch
+    const response = await fetchService(this.#getApiUrl(text), options)
     const json = await response.json()
     return json[0]?.[0]?.[0] || ''
   }

@@ -1,12 +1,12 @@
 (() => {
   const html = ({ t, state, localState }) => {
-    const test = state.folders
-    const $view = state.currentFolderId
-      ? `<pll-words-view search="${localState.search}"></pll-words-view>`
-      : `<pll-folders-view search="${localState.search}"></pll-folders-view>`
+    const showFolders = !state.currentFolderId
+    const $view = showFolders
+      ? `<pll-folders-view search="${localState.search}"></pll-folders-view>`
+      : `<pll-words-view search="${localState.search}"></pll-words-view>`
     
     return (
-      `<input is="pll-input" type="text" placeholder="${t.searchPlaceholder}" data-listen-on-input="onInput">
+      `<input is="pll-input" type="text" placeholder="${showFolders ? t.searchFolder : t.searchWords}" data-listen-on-input="onInput">
       ${$view}`
     )
   }
@@ -30,7 +30,7 @@
 
     methods: {
       onInput(ctx, event) {
-        ctx.setLocalState({
+        ctx.mutateLocalState({
           search: event.target.value
         })
       }

@@ -1,0 +1,14 @@
+{
+  "en": {
+    "wordsHighlightBackgroundColor": "Words highlight color",
+    "wordsHighlightTextColor": "Words highlight text color"
+  },
+  "uk": {
+    "wordsHighlightBackgroundColor": "Колір підсвічування слів",
+    "wordsHighlightTextColor": "Колір тексту підсвічування слів"
+  },
+  "zh": {
+    "wordsHighlightBackgroundColor": "高亮颜色",
+    "wordsHighlightTextColor": "高亮文本颜色"
+  }
+}

@@ -16,12 +16,15 @@ const StateMutators = {
   },
 
   createNewFolder(state) {
-    const id = Date.now()
+    const id = Date.now().toString()
+
     state.folders.push({
       id,
       name: 'New folder',
       entriesId: id,
     })
+
+    return id
   },
   deleteFolder(state, index) {
     const entriesId = state.folders[index]?.entriesId
@@ -29,7 +32,7 @@ const StateMutators = {
 
     // Remove entries
     if (entriesId in state.foldersEntries) {
-      state.foldersEntries[entriesId] = undefined
+      delete state.foldersEntries[entriesId]
     }
   },
 
@@ -72,6 +75,27 @@ const StateMutators = {
 
   enableAtAll(state) {
     state.config.disabledAtAll = false
+  },
+
+  changePronounceWord(state, flag) {
+    state.config.pronounceWord = flag
+  },
+
+  changeHighlightWords(state, flag) {
+    state.config.highlightWords = flag
+  },
+
+  changeOnBoardedStatus(state, flag) {
+    state.config.onboarded = flag
+  },
+
+  changeHighlightTranslationBgColor(state, color) {
+    state.config.highlightTranslationBgColor = color
+  },
+
+
+  changeHighlightTranslationColor(state, color) {
+    state.config.highlightTranslationColor = color
   },
 
   updateConfig(state, payload) {

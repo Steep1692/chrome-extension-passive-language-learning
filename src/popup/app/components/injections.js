@@ -1,6 +1,7 @@
 const popupViewsPath = '/popup/app/components/'
 
 export default {
+  Checkbox: popupViewsPath + 'checkbox/checkbox.js',
   Config: popupViewsPath + 'config/config.js',
   Header: popupViewsPath + 'header/header.js',
 
@@ -11,4 +12,6 @@ export default {
   SupportScreen: popupViewsPath + 'support-screen/support-screen.js',
 
   ImportExport: popupViewsPath + 'import-export/import-export.js',
+
+  ColorsSettings: popupViewsPath + 'colors-settings/colors-settings.js',
 }

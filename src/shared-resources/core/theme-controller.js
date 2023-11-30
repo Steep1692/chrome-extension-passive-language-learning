@@ -1,7 +1,7 @@
 const ThemeController = (() => {
   const themeUK = {
     '--splash-primary': '#57dffa',
-    '--primary': '#03a9f4',
+    '--primary': '#24b4fa',
     '--splash-secondary': '#fbffa1',
     '--secondary': '#ffeb3b',
     '--text-light': '#fff',

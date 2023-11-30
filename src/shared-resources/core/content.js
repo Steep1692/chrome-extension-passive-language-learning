@@ -2,9 +2,11 @@
   'use strict'
 
   class ScriptManager {
-    static injectScriptToPage = (src) => {
+    static injectScriptToPage = (src, scriptId) => {
+      if (document.getElementById(scriptId)) return Promise.resolve()
+
       const n = document.createElement('script')
-      n.id = YoutubeSubtitlesSpeech.scriptId
+      n.id = scriptId
       document.documentElement.append(n)
       n.src = chrome.runtime.getURL(src)
       n.defer = true
@@ -32,84 +34,84 @@
 
   const FOLDERS_SAMPLE_DATA_EN = [
     {
-      'id': '100-adverbs',
-      'name': '100-adverbs',
-      'entriesId': '100-adverbs'
+      "id": "100-adverbs",
+      "name": "100 Прислівників",
+      "entriesId": "100-adverbs"
     },
     {
-      'id': '100-conjunction-words',
-      'name': '100-conjunction-words',
-      'entriesId': '100-conjunction-words'
+      "id": "100-conjunction-words",
+      "name": "100 Сполучників",
+      "entriesId": "100-conjunction-words"
     },
     {
-      'id': '100-interjection-words',
-      'name': '100-interjection-words',
-      'entriesId': '100-interjection-words'
+      "id": "100-interjection-words",
+      "name": "100 Міжслів",
+      "entriesId": "100-interjection-words"
     },
     {
-      'id': '100-nouns',
-      'name': '100-nouns',
-      'entriesId': '100-nouns'
+      "id": "100-nouns",
+      "name": "100 Іменників",
+      "entriesId": "100-nouns"
     },
     {
-      'id': '100-preposition-words',
-      'name': '100-preposition-words',
-      'entriesId': '100-preposition-words'
+      "id": "100-preposition-words",
+      "name": "100 Прийменників",
+      "entriesId": "100-preposition-words"
     },
     {
-      'id': '100-verbs',
-      'name': '100-verbs',
-      'entriesId': '100-verbs'
+      "id": "100-verbs",
+      "name": "100 Дієслів",
+      "entriesId": "100-verbs"
     },
     {
-      'id': 'countable',
-      'name': 'countable',
-      'entriesId': 'countable'
+      "id": "countable",
+      "name": "Зліченні",
+      "entriesId": "countable"
     },
     {
-      'id': 'linking-verbs',
-      'name': 'linking-verbs',
-      'entriesId': 'linking-verbs'
+      "id": "linking-verbs",
+      "name": "Зв'язуючі дієслова",
+      "entriesId": "linking-verbs"
     },
     {
-      'id': 'object-pronouns',
-      'name': 'object-pronouns',
-      'entriesId': 'object-pronouns'
+      "id": "object-pronouns",
+      "name": "Займенники-об'єкти",
+      "entriesId": "object-pronouns"
     },
     {
-      'id': 'personal-pronouns',
-      'name': 'personal-pronouns',
-      'entriesId': 'personal-pronouns'
+      "id": "personal-pronouns",
+      "name": "Особисті займенники",
+      "entriesId": "personal-pronouns"
     },
     {
-      'id': 'possesive-pronouns',
-      'name': 'possesive-pronouns',
-      'entriesId': 'possesive-pronouns'
+      "id": "possesive-pronouns",
+      "name": "Присвійні займенники",
+      "entriesId": "possesive-pronouns"
     },
     {
-      'id': 'possesive-words',
-      'name': 'possesive-words',
-      'entriesId': 'possesive-words'
+      "id": "possesive-words",
+      "name": "Присвійні слова",
+      "entriesId": "possesive-words"
     },
     {
-      'id': 'question-complex-words',
-      'name': 'question-complex-words',
-      'entriesId': 'question-complex-words'
+      "id": "question-complex-words",
+      "name": "Складні питальні слова",
+      "entriesId": "question-complex-words"
     },
     {
-      'id': 'question-words',
-      'name': 'question-words',
-      'entriesId': 'question-words'
+      "id": "question-words",
+      "name": "Питальні слова",
+      "entriesId": "question-words"
     },
     {
-      'id': 'reflexive-pronouns',
-      'name': 'reflexive-pronouns',
-      'entriesId': 'reflexive-pronouns'
+      "id": "reflexive-pronouns",
+      "name": "Займенники-вказівники",
+      "entriesId": "reflexive-pronouns"
     },
     {
-      'id': 'uncountable',
-      'name': 'uncountable',
-      'entriesId': 'uncountable'
+      "id": "uncountable",
+      "name": "Незліченні",
+      "entriesId": "uncountable"
     }
   ]
 
@@ -1204,14 +1206,6 @@
         'translation': 'Oh my gosh'
       },
       {
-        'original': 'О моє слово',
-        'translation': 'Oh my word'
-      },
-      {
-        'original': 'О мої зірочки',
-        'translation': 'Oh my stars'
-      },
-      {
         'original': 'Боже милостивий',
         'translation': 'Oh my goodness gracious'
       },
@@ -1232,92 +1226,12 @@
         'translation': 'Oh snap'
       },
       {
-        'original': 'Боже боже',
+        'original': 'Боже мойе',
         'translation': 'Oh dear me'
-      },
-      {
-        'original': 'Ой дорогий мені',
-        'translation': 'Oh dearie me'
-      },
-      {
-        'original': 'О боже о боже',
-        'translation': 'Oh dear oh dear'
-      },
-      {
-        'original': 'Ой ой ой мій',
-        'translation': 'Oh my oh my'
-      },
-      {
-        'original': 'О мій о дорогий',
-        'translation': 'Oh my oh dear'
       },
       {
         'original': 'О мої небеса',
         'translation': 'Oh my heavens'
-      },
-      {
-        'original': 'О мій милостивий',
-        'translation': 'Oh my gracious'
-      },
-      {
-        'original': 'О моя ланта',
-        'translation': 'Oh my lanta'
-      },
-      {
-        'original': 'Боже мій',
-        'translation': 'Oh my goodness me'
-      },
-      {
-        'original': 'О мій милий добродію',
-        'translation': 'Oh my sweet goodness'
-      },
-      {
-        'original': 'Ой ой ой ой ой мій',
-        'translation': 'Oh my oh my oh my'
-      },
-      {
-        'original': 'Ой, моя спина болить',
-        'translation': 'Oh my aching back'
-      },
-      {
-        'original': 'О мої болі кості',
-        'translation': 'Oh my aching bones'
-      },
-      {
-        'original': 'Ой, мої болять ноги',
-        'translation': 'Oh my aching feet'
-      },
-      {
-        'original': 'Ой болить моя голова',
-        'translation': 'Oh my aching head'
-      },
-      {
-        'original': 'О моє болить серце',
-        'translation': 'Oh my aching heart'
-      },
-      {
-        'original': 'Ой болять мої ноги',
-        'translation': 'Oh my aching legs'
-      },
-      {
-        'original': 'О моя болить шия',
-        'translation': 'Oh my aching neck'
-      },
-      {
-        'original': 'О мій болить живіт',
-        'translation': 'Oh my aching stomach'
-      },
-      {
-        'original': 'Ох мій болить зад',
-        'translation': 'Oh my aching backside'
-      },
-      {
-        'original': 'Ой, мої болять коліна',
-        'translation': 'Oh my aching knees'
-      },
-      {
-        'original': 'О мої болі плечі',
-        'translation': 'Oh my aching shoulders'
       }
     ],
     '100-nouns': [
@@ -1330,7 +1244,7 @@
         'translation': 'People'
       },
       {
-        'original': 'Шлях',
+        'original': 'шлях',
         'translation': 'Way'
       },
       {
@@ -1968,10 +1882,6 @@
         'translation': 'Behind'
       },
       {
-        'original': 'Betwixt',
-        'translation': 'Betwixt'
-      },
-      {
         'original': 'передній',
         'translation': 'Fore'
       },
@@ -1986,10 +1896,6 @@
       {
         'original': 'незважаючи на',
         'translation': 'Notwithstanding'
-      },
-      {
-        'original': 'O\'er',
-        'translation': 'O\'er'
       },
       {
         'original': 'пер',
@@ -2024,76 +1930,8 @@
         'translation': 'Where'
       },
       {
-        'original': 'При чому',
-        'translation': 'Wherewith'
-      },
-      {
-        'original': 'На що',
-        'translation': 'Wherewithal'
-      },
-      {
-        'original': 'Withal',
-        'translation': 'Withal'
-      },
-      {
-        'original': 'Раніше',
-        'translation': 'Afore'
-      },
-      {
-        'original': 'Анент',
-        'translation': 'Anent'
-      },
-      {
-        'original': 'E\'en',
-        'translation': 'E\'en'
-      },
-      {
-        'original': 'Ere',
-        'translation': 'Ere'
-      },
-      {
-        'original': 'Наскільки',
-        'translation': 'Insofar'
-      },
-      {
         'original': 'близько',
         'translation': 'Nigh'
-      },
-      {
-        'original': 'незважаючи на',
-        'translation': 'Notwithstanding'
-      },
-      {
-        'original': 'O\'er',
-        'translation': 'O\'er'
-      },
-      {
-        'original': 'Pro',
-        'translation': 'Pro'
-      },
-      {
-        'original': 'Кулон',
-        'translation': 'Pendent'
-      },
-      {
-        'original': 'Re',
-        'translation': 'Re'
-      },
-      {
-        'original': 'Зривати',
-        'translation': 'Thwart'
-      },
-      {
-        'original': 'Vis-à-vis',
-        'translation': 'Vis-à-vis'
-      },
-      {
-        'original': 'Wrt',
-        'translation': 'Wrt'
-      },
-      {
-        'original': 'Пр',
-        'translation': 'Ex'
       },
       {
         'original': 'ніж',
@@ -2118,10 +1956,6 @@
       {
         'original': 'далеко',
         'translation': 'Far'
-      },
-      {
-        'original': 'Кормовий',
-        'translation': 'Abaft'
       }
     ],
     '100-verbs': [
@@ -2660,7 +2494,7 @@
         'translation': 'Mine'
       },
       {
-        'original': 'Ваші',
+        'original': 'Ваша',
         'translation': 'Yours'
       },
       {
@@ -2971,6 +2805,11 @@
       toLang: 'en',
 
       onboarded: false,
+      pronounceWord: true,
+      highlightWords: true,
+
+      highlightTranslationBgColor: '#ffbcff',
+      highlightTranslationColor: '#ffbcff',
     },
     router: {
       path: 'dictionary',
@@ -2980,26 +2819,19 @@
   const CONSTANTS = {
     clientInfo: {
       origin: window.location.origin,
-    },
-    payment: {
+    }, payment: {
       serviceLink: 'https://www.privat24.ua/rd/send_qr/liqpay_static_qr/qr_beb71f537aab43ecaceab4cd7670d36b',
     },
   }
 
-  const CURSE_WORDS = [
-    'хто', 'патрон', 'пес',
-  ]
+  const CURSE_WORDS = ['хто', 'патрон', 'пес',]
 
   class _LangsUtils {
     static #LANGS = {
-      'uk': 'uk',
-      'en': 'en',
-      'zh': 'zh',
+      'uk': 'uk', 'en': 'en', 'zh': 'zh',
     }
     static #PLURAL_ENDINGS = {
-      [_LangsUtils.#LANGS.en]: 's',
-      [_LangsUtils.#LANGS.uk]: 'и',
-      [_LangsUtils.#LANGS.zh]: '们',
+      [_LangsUtils.#LANGS.en]: 's', [_LangsUtils.#LANGS.uk]: 'и', [_LangsUtils.#LANGS.zh]: '们',
     }
 
     static getLanguageByLetter = (letter) => {
@@ -3080,12 +2912,7 @@
     static #INPUT_TAGS = ['textarea', 'input', 'select']
 
     static isInputNode(node) {
-      return (
-        _DOMUtils.#INPUT_TAGS.includes(node.tagName.toLowerCase())
-        || node.contentEditable === 'true'
-        || node.role === 'textbox'
-        || node.role === 'listbox'
-      )
+      return (_DOMUtils.#INPUT_TAGS.includes(node.tagName.toLowerCase()) || node.contentEditable === 'true' || node.role === 'textbox' || node.role === 'listbox')
     }
 
     static traverseParent = (node, callback) => {
@@ -3110,12 +2937,7 @@
       }
 
       const rect = node.getBoundingClientRect()
-      return (
-        rect.top >= 0 &&
-        rect.left >= 0 &&
-        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-      )
+      return (rect.top >= 0 && rect.left >= 0 && rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && rect.right <= (window.innerWidth || document.documentElement.clientWidth))
     }
   }
 
@@ -3300,6 +3122,10 @@
       }
     }
 
+    speaking() {
+      return speechSynthesis.speaking
+    }
+
     setLang(lang) {
       this.#utterThis.lang = lang
     }
@@ -3442,16 +3268,44 @@
     static NO_HIGHLIGHT_ATTR = 'pll-no-highlight'
     static ALREADY_REPLACED_ATTR = 'pll-replaced'
     static #isSkipReplacingRules = []
+    static CSS_VAR_HIGHLIGHT_COLOR_ORIGINAL = '--bg-word-original'
+    static CSS_VAR_HIGHLIGHT_COLOR_TRANSLATION = '--bg-word-translation'
+    static CSS_VAR_TEXT_COLOR = '--bg-word-color'
+    static RegExpCache = new Map()
+
+    static setColor = (cssVarName, color) => {
+      window.document.body.style.setProperty(cssVarName, color)
+    }
+
+    static setHighlightTranslationBgColor = (color) => {
+      _ReplacerUtils.setColor(_ReplacerUtils.CSS_VAR_HIGHLIGHT_COLOR_TRANSLATION, color)
+    }
+
+    static setHighlightTranslationColor = (color) => {
+      _ReplacerUtils.setColor(_ReplacerUtils.CSS_VAR_TEXT_COLOR, color)
+    }
+
+    static setHighlightColor = (originalColor, translationColor, textColor) => {
+      _ReplacerUtils.setColor(_ReplacerUtils.CSS_VAR_HIGHLIGHT_COLOR_ORIGINAL, originalColor)
+      _ReplacerUtils.setHighlightTranslationBgColor(translationColor)
+      _ReplacerUtils.setHighlightTranslationColor(textColor)
+    }
+
+    static makeHighlightTransparent = () => {
+      _ReplacerUtils.setHighlightColor('transparent', 'transparent', '')
+    }
+
+    static makeHighlightColorful = (originalColor, translationColor, textColor) => {
+      _ReplacerUtils.setHighlightColor(originalColor, translationColor, textColor)
+    }
 
     static isReplaced = (node) => node.hasAttribute(_ReplacerUtils.ALREADY_REPLACED_ATTR)
 
     static isSkipReplacing = (node) => (
-      (
-        node.nodeType !== Element.TEXT_NODE
+      (node.nodeType !== Element.TEXT_NODE
         && node.nodeType !== Element.ELEMENT_NODE
         && node.nodeType !== Element.DOCUMENT_FRAGMENT_NODE
-        && node.nodeType !== Element.DOCUMENT_NODE
-      )
+        && node.nodeType !== Element.DOCUMENT_NODE)
       || _ReplacerUtils.IGNORED_TAGS.includes(node.tagName.toLowerCase())
       || _DOMUtils.isInputNode(node)
       || _ReplacerUtils.isReplaced(node)
@@ -3464,15 +3318,26 @@
     static isNoHighlight = (node) => node.hasAttribute(_ReplacerUtils.NO_HIGHLIGHT_ATTR)
 
     static createMatchRegExp = (word) => {
-      if (_NumberUtils.isNumeric(word)) {
-        return new RegExp(word, 'm')
+      // NOTE: Is RegExp caching indeed needed to boost performance?
+      if (_ReplacerUtils.RegExpCache.has(word)) {
+        return _ReplacerUtils.RegExpCache.get(word)
       }
 
-      const anyLetter = '[\\wієї\u0401\u0451\u0410-\u044f]'
-      const pluralEndings = _LangsUtils.getPluralEndings().join('')
-      const pluralPart = `[${pluralEndings}]`
+      let regExp
 
-      return new RegExp(`(?<!${anyLetter})` + word + `${pluralPart}?(?!${anyLetter})`, 'im')
+      if (_NumberUtils.isNumeric(word)) {
+        regExp = new RegExp(word, 'm')
+      } else {
+        const anyLetter = '[-ʼ‘\'\\wієї\u0401\u0451\u0410-\u044f]'
+        const pluralEndings = _LangsUtils.getPluralEndings().join('')
+        const pluralPart = `[${pluralEndings}]`
+
+        regExp = new RegExp(`(?<!${anyLetter})` + word + `${pluralPart}?(?!${anyLetter})`, 'im')
+      }
+
+      _ReplacerUtils.RegExpCache.set(word, regExp)
+
+      return regExp
     }
 
     static matches = (node, word) => !!node.textContent.match(_ReplacerUtils.createMatchRegExp(word))
@@ -3544,16 +3409,12 @@
         const regex = _ReplacerUtils.createMatchRegExp(original)
 
         var getNodes = function () {
-          var nodes = [],
-            offset = 0,
-            node,
+          var nodes = [], offset = 0, node,
             nodeIterator = document.createNodeIterator(element, NodeFilter.SHOW_TEXT, null, false)
 
           while (node = nodeIterator.nextNode()) {
             nodes.push({
-              textNode: node,
-              start: offset,
-              length: node.nodeValue.length
+              textNode: node, start: offset, length: node.nodeValue.length
             })
             offset += node.nodeValue.length
           }
@@ -3561,12 +3422,10 @@
         }
 
         var nodes = getNodes()
-        if (!nodes.length)
-          return
+        if (!nodes.length) return
 
         var text = ''
-        for (var i = 0; i < nodes.length; ++i)
-          text += nodes[i].textNode.nodeValue
+        for (var i = 0; i < nodes.length; ++i) text += nodes[i].textNode.nodeValue
 
         let match
         while (match = text.match(regex)) {
@@ -3580,11 +3439,9 @@
           for (i = 0; i < nodes.length; ++i) {
             var node = nodes[i]
 
-            if (node.start + node.length <= match.index)
-              continue
+            if (node.start + node.length <= match.index) continue
 
-            if (!startNode)
-              startNode = node
+            if (!startNode) startNode = node
 
             if (node.start + node.length >= match.index + match[0].length) {
               endNode = node
@@ -3599,9 +3456,10 @@
           const doNotReplace = _ReplacerUtils.hasNoReplaceParent(range.commonAncestorContainer)
 
           const spanNode = document.createElement('span')
-          spanNode.style.backgroundColor = doNotReplace ? 'var(--bg-word-original, #aeffb1)' : 'var(--bg-word-translation, #ffbcff)'
-          spanNode.style.color = 'black'
-          spanNode.style.fontWeight = 'bold'
+          const varName = doNotReplace ? _ReplacerUtils.CSS_VAR_HIGHLIGHT_COLOR_ORIGINAL : _ReplacerUtils.CSS_VAR_HIGHLIGHT_COLOR_TRANSLATION
+          spanNode.style.backgroundColor = `var(${varName})`
+          spanNode.style.color = `var(${_ReplacerUtils.CSS_VAR_TEXT_COLOR})`
+          // spanNode.style.fontWeight = 'bold'
           spanNode.setAttribute(_ReplacerUtils.ALREADY_REPLACED_ATTR, 'true')
 
           const extract = range.extractContents()
@@ -3617,12 +3475,8 @@
 
             const isCapitalCase = extract.textContent.charAt(0) === extract.textContent.charAt(0).toUpperCase()
             const isPlural = _LangsUtils.isPlural(extract.textContent, original)
-            const translationInRightCase = isCapitalCase
-              ? _StringUtils.capitalizeFirstLetter(translation)
-              : _StringUtils.lowerCaseFirstLetter(translation)
-            const translationFinal = isPlural
-              ? _LangsUtils.pluralize(translationInRightCase)
-              : translationInRightCase
+            const translationInRightCase = isCapitalCase ? _StringUtils.capitalizeFirstLetter(translation) : _StringUtils.lowerCaseFirstLetter(translation)
+            const translationFinal = isPlural ? _LangsUtils.pluralize(translationInRightCase) : translationInRightCase
 
             $fragment.append(translationFinal)
             spanNode.appendChild($fragment)
@@ -3640,8 +3494,7 @@
         }
       } catch (e) {
         console.log(`%cUNEXPECTED ERROR: MINOR for future`, 'background: black; color: white;', {
-          original,
-          elementTextContent: element?.textContent
+          original, elementTextContent: element?.textContent
         })
         console.log(e)
       }
@@ -3674,10 +3527,8 @@
     }
 
     replaceWords(dictionary, rootNode) {
-      if (rootNode.nodeType === Node.TEXT_NODE) {
-        if (_ReplacerUtils.hasSkipReplacingParent(rootNode)) {
-          return
-        }
+      if (_ReplacerUtils.hasSkipReplacingParent(rootNode)) {
+        return
       }
 
       const nodesThatCouldBeReplaced = this.#getNodesThatCanContainMatches(rootNode)
@@ -3788,7 +3639,10 @@
     static #newVideoCaptionUrlListeners = []
 
     static inject = () => {
-      ScriptManager.injectScriptToPage('shared-resources/core/injectable-content-script-that-can-access-anything.js')
+      ScriptManager.injectScriptToPage(
+        'shared-resources/core/injectable-content-script-that-can-access-anything.js',
+        YoutubeSubtitlesSpeech.scriptId
+      )
       YoutubeApiExposer.scriptInjected = true
     }
 
@@ -3899,9 +3753,7 @@
         if (playing && YoutubeSubtitlesSpeech.#segments?.length) {
           const currentTimeMs = YoutubeSubtitlesSpeech.#$player.currentTime * 1000 + 280
 
-          const segment = YoutubeSubtitlesSpeech.#segments.find(
-            (s) => _NumberUtils.isNumberBetweenEquals(currentTimeMs, s.start, s.end)
-          )
+          const segment = YoutubeSubtitlesSpeech.#segments.find((s) => _NumberUtils.isNumberBetweenEquals(currentTimeMs, s.start, s.end))
           const text = segment?.text
 
           if (lastSegment !== segment) {
@@ -3942,17 +3794,10 @@
           if (!lastTime || now - lastTime > CHUNK_SIZE_MS) {
             lastTime = now
 
-            const segments = YoutubeSubtitlesSpeech.#segments.filter(
-              (s) => (
-                _NumberUtils.isNumberBetweenEquals(s.start, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS)
-                && _NumberUtils.isNumberBetweenEquals(s.end, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS)
-              )
-            )
+            const segments = YoutubeSubtitlesSpeech.#segments.filter((s) => (_NumberUtils.isNumberBetweenEquals(s.start, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS) && _NumberUtils.isNumberBetweenEquals(s.end, currentTimeMs, currentTimeMs + CHUNK_SIZE_MS)))
             const text = segments.map((s) => s.text).join(' ')
 
-            const textCursified = _StringUtils.replaceRandomWord(
-              text, _ArrayUtils.getRandomItem(CURSE_WORDS)
-            )
+            const textCursified = _StringUtils.replaceRandomWord(text, _ArrayUtils.getRandomItem(CURSE_WORDS))
             YoutubeSubtitlesSpeech.utterThis2.speak(textCursified)
           }
         }
@@ -4218,8 +4063,9 @@
     return Object.values(foldersEntries).flat()
   }
 
+
   const stateManager = new Store('state', INITIAL_STATE, {
-    version: '1.07',
+    version: '1.004',
   })
 
   const WordsReplacerUtterer = new Utterer({
@@ -4230,37 +4076,34 @@
   })
   let lastState = await stateManager.load()
 
-  let lastSpeakNode
   const wordsReplacer = new DOMReplacer({
     dictionary: lastState.dictionary,
-    skipRules: [
-      (node) => node.id === Tooltip.tooltipId || (Toaster && node.id === Toaster.toasterId)
-    ],
+    skipRules: [(node) => node.id === Tooltip.tooltipId || (Toaster && node.id === Toaster.toasterId)],
     onWordReplaced: (node, { original }) => {
       node.addEventListener('mouseover', (e) => {
-        lastSpeakNode = e.currentTarget
+        const target = e.currentTarget
 
-        WordsReplacerUtterer.speak(e.currentTarget.textContent, () => {
-          lastSpeakNode = null
-        })
+        if (lastState.config.pronounceWord) {
+          if (!WordsReplacerUtterer.speaking()) {
+            WordsReplacerUtterer.speak(e.currentTarget.textContent)
+          }
+        }
 
         // Tooltip
-        const rect = e.currentTarget.getBoundingClientRect()
+        const rect = target.getBoundingClientRect()
         Tooltip.show(original, rect.right - rect.width / 2, rect.top)
       })
 
-      node.addEventListener('mouseout', (e) => {
-        if (lastSpeakNode === e.currentTarget) {
-          WordsReplacerUtterer.cancel()
-        }
-
+      node.addEventListener('mouseout', () => {
+        WordsReplacerUtterer.cancel()
         Tooltip.hide()
       })
     },
   })
 
+
   const handleLangsChanged = (langFrom, langTo) => {
-    YoutubeSubtitlesSpeech.setLangsWithUpdate(langFrom, langTo)
+    // YoutubeSubtitlesSpeech.setLangsWithUpdate(langFrom, langTo)
     WordsReplacerUtterer.setLang(langTo)
   }
 
@@ -4268,8 +4111,8 @@
     const dictionary = getAllFoldersEntries(foldersEntries)
 
     wordsReplacer.setDictionaryAndReplace(dictionary)
-    YoutubeSubtitlesSpeech.setDictionary(dictionary)
-    VideoSubtitlesReplacer.setDictionaryAndReplace(dictionary)
+    // YoutubeSubtitlesSpeech.setDictionary(dictionary)
+    // VideoSubtitlesReplacer.setDictionaryAndReplace(dictionary)
   }
 
   const handleDisabledChanged = (onboarded, disabledAtAll, ignoredOrigins, foldersEntries, init) => {
@@ -4288,8 +4131,28 @@
     }
   }
 
+  const handleHighlightWordsChanged = (highlightWords) => {
+    if (highlightWords) {
+      _ReplacerUtils.makeHighlightColorful('#aeffb1', lastState.config.highlightTranslationBgColor, lastState.config.highlightTranslationColor)
+    } else {
+      _ReplacerUtils.makeHighlightTransparent()
+    }
+  }
+
+  const handleHighlightTranslationBgColorChanged = (color) => {
+    _ReplacerUtils.setHighlightTranslationBgColor(color)
+  }
+
+  const handleHighlightTranslationColorChanged = (color) => {
+    _ReplacerUtils.setHighlightTranslationColor(color)
+  }
+
+
   handleDisabledChanged(lastState.config.onboarded, lastState.config.disabledAtAll, lastState.config.ignoredOrigins, lastState.foldersEntries, true)
   handleLangsChanged(lastState.config.fromLang, lastState.config.toLang)
+  handleHighlightTranslationBgColorChanged(lastState.config.highlightTranslationBgColor)
+  handleHighlightTranslationColorChanged(lastState.config.highlightTranslationColor)
+  handleHighlightWordsChanged(lastState.config.highlightWords)
 
 
   chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
@@ -4300,7 +4163,7 @@
       }
       case 'set-data': {
         const mutationRecord = message.data
-        const { prop, value, path } = mutationRecord
+        const { prop, value, path, deleteProperty } = mutationRecord
 
         const newState = lastState
         let target = newState
@@ -4308,31 +4171,45 @@
           target = target[prop]
         }
 
-        target[prop] = value
+        if (deleteProperty) {
+          delete target[prop]
+        } else {
+          target[prop] = value
+        }
 
-        switch (path[0]) {
-          case 'config':
-            switch (path[1]) {
-              case 'ignoredOrigins':
-                handleDisabledChanged(newState.config.onboarded, newState.config.disabledAtAll, newState.config.ignoredOrigins, newState.foldersEntries)
-                break
-            }
+        if (!deleteProperty) {
+          switch (path[0]) {
+            case 'config':
+              switch (path[1]) {
+                case 'ignoredOrigins':
+                  handleDisabledChanged(newState.config.onboarded, newState.config.disabledAtAll, newState.config.ignoredOrigins, newState.foldersEntries)
+                  break
+              }
 
-            switch (prop) {
-              case 'fromLang':
-              case 'toLang':
-                handleLangsChanged(newState.config.fromLang, newState.config.toLang)
-                break
-              case 'disabledAtAll':
-              case 'ignoredOrigins':
-              case 'onboarded':
-                handleDisabledChanged(newState.config.onboarded, newState.config.disabledAtAll, newState.config.ignoredOrigins, newState.foldersEntries)
-                break
-            }
-            break
-          case 'foldersEntries':
-            handleDictionaryChange(newState.foldersEntries)
-            break
+              switch (prop) {
+                case 'fromLang':
+                case 'toLang':
+                  handleLangsChanged(newState.config.fromLang, newState.config.toLang)
+                  break
+                case 'disabledAtAll':
+                case 'onboarded':
+                  handleDisabledChanged(newState.config.onboarded, newState.config.disabledAtAll, newState.config.ignoredOrigins, newState.foldersEntries)
+                  break
+                case 'highlightWords':
+                  handleHighlightWordsChanged(newState.config.highlightWords)
+                  break
+                case 'highlightTranslationBgColor':
+                    handleHighlightTranslationBgColorChanged(newState.config.highlightTranslationBgColor)
+                  break
+                case 'highlightTranslationColor':
+                    handleHighlightTranslationColorChanged(newState.config.highlightTranslationColor)
+                  break
+              }
+              break
+            case 'foldersEntries':
+              handleDictionaryChange(newState.foldersEntries)
+              break
+          }
         }
 
         stateManager.save(newState)
@@ -4346,8 +4223,7 @@
         let wordTranslated
         if (Translator) {
           Toaster?.toast('Loading translation…')
-          const state = lastState
-          const translator = new Translator(fetch, state.config.fromLang, state.config.toLang)
+          const translator = new Translator(lastState.config.fromLang, lastState.config.toLang)
           wordTranslated = await translator.getTranslation(word)
         }
 
@@ -4386,29 +4262,28 @@
         }
 
         if (translation) {
-          const foldersNew = lastState.folders.some((f) => f.id === FOLDER_ID_SELECTION_WORDS) ? lastState.folders : [
-            ...lastState.folders,
-            {
+          const newState = lastState
+
+          // Add folder
+          const folderExists = newState.folders.some((f) => f.id === FOLDER_ID_SELECTION_WORDS)
+          if (!folderExists) {
+            const folder = {
               id: FOLDER_ID_SELECTION_WORDS,
               name: 'Слова, додані з опції в меню',
               entriesId: FOLDER_ID_SELECTION_WORDS,
             }
-          ]
-          const foldersEntriesNew = {
-            ...lastState.foldersEntries,
-            [FOLDER_ID_SELECTION_WORDS]: [
-              ...(lastState.foldersEntries[FOLDER_ID_SELECTION_WORDS] || []),
-              newDictItem,
-            ]
+
+            newState.folders.push(folder)
           }
 
-          const newState = {
-            ...lastState,
-            foldersEntries: foldersEntriesNew,
-            folders: foldersNew,
+          // Add folder entry
+          if (!newState.foldersEntries[FOLDER_ID_SELECTION_WORDS]) {
+            newState.foldersEntries[FOLDER_ID_SELECTION_WORDS] = []
           }
+          newState.foldersEntries[FOLDER_ID_SELECTION_WORDS].push(newDictItem)
 
           stateManager.save(newState)
+          lastState = newState
 
           Toaster?.toast(`Word added ${word}: ${translation}!`)
 

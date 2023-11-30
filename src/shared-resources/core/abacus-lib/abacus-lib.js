@@ -1,4 +1,6 @@
 (async () => {
+  const mapComponentToComponentName = new Map()
+
   const HTMLElementClassToTagName = new Map()
   HTMLElementClassToTagName.set(HTMLButtonElement, 'button')
   HTMLElementClassToTagName.set(HTMLInputElement, 'input')
@@ -12,7 +14,7 @@
                   componentInjections,
                   pluginInjections,
                   serviceInjections,
-  }) => {
+                }) => {
     const PREFIX = 'pll'
     const SymbolComponentName = Symbol('Abacus Component Name')
 
@@ -58,7 +60,7 @@
         const componentNames = Reactivity.reactiveProps.get(key)
 
         if (!componentNames) {
-          return;
+          return
         }
 
         const secondaryCallbacks = []
@@ -92,6 +94,28 @@
         return typeof value === 'object'
           && value !== null
           && !(value instanceof Promise)
+          && !(ReactiveState.SYMBOL_PROXY_TARGET in value)
+      }
+
+      static getMutationRecordPath = (target) => {
+        ReactiveState.disableReactivity()
+        const mutationRecordPath = []
+
+        let parent = target[ReactiveState.SYMBOL_OBJ_PARENT]
+        let child = target[ReactiveState.SYMBOL_PROXY_TARGET]
+
+        while (parent) {
+          const parentProp = Reflect.ownKeys(parent).find((key, _, arr) => {
+            return parent[key]?.[ReactiveState.SYMBOL_PROXY_TARGET] === child
+          })
+
+          mutationRecordPath.unshift(parentProp)
+          child = parent[ReactiveState.SYMBOL_PROXY_TARGET]
+          parent = parent[ReactiveState.SYMBOL_OBJ_PARENT]
+        }
+
+        ReactiveState.enableReactivity()
+        return mutationRecordPath
       }
 
       static proxyState = (obj, parentObj) => {
@@ -120,30 +144,40 @@
                 target[prop] = ReactiveState.proxyState(value, target)
               }
 
-              Reactivity.handleReactivePropChange(target, prop, value)
+              Reactivity.handleReactivePropChange(target, prop)
               const mutationRecord = {
-                path: [],
+                path: ReactiveState.getMutationRecordPath(target),
                 prop,
                 value,
-              }
-
-              let parent = target[ReactiveState.SYMBOL_OBJ_PARENT]
-              let child = target[ReactiveState.SYMBOL_PROXY_TARGET]
-
-              while (parent) {
-                const parentProp = Reflect.ownKeys(parent).find((key, _, arr) => {
-                  return parent[key]?.[ReactiveState.SYMBOL_PROXY_TARGET] === child
-                })
-
-                mutationRecord.path.unshift(parentProp)
-                child = parent[ReactiveState.SYMBOL_PROXY_TARGET]
-                parent = parent[ReactiveState.SYMBOL_OBJ_PARENT]
               }
 
               onStateMutation?.(mutationRecord)
             }
 
             setInProcess = false
+
+            return res
+          },
+          deleteProperty(target, prop) {
+            const res = Reflect.deleteProperty(...arguments)
+
+            if (Array.isArray(target)) {
+              // when removing an item from array there will be 2 operations:
+              // 1. delete item
+              // 2. change array length
+              // we need to ignore the "1. delete item", so we return here
+              return res
+            }
+
+            Reactivity.handleReactivePropChange(target, prop)
+            const mutationRecord = {
+              path: ReactiveState.getMutationRecordPath(target),
+              prop,
+              value: undefined,
+              deleteProperty: true,
+            }
+
+            onStateMutation?.(mutationRecord)
 
             return res
           },
@@ -352,16 +386,6 @@
       $style.innerHTML = css
       $root.appendChild($style)
     }
-
-    // const findNearestHost = ($node) => {
-    //   let $host = $node
-    //
-    //   while ($host && !$host.shadowRoot) {
-    //     $host = $host.parentNode || $host.host
-    //   }
-    //
-    //   return $host
-    // }
 
     const injectStyleFiles = (ctx, styleFilesURLs) => {
       const shadowDOM = ctx.shadowRoot
@@ -578,6 +602,7 @@
         }
       }
     }
+
     // ==============
 
     const createWebComponent = (name, {
@@ -643,7 +668,7 @@
                   this.plugins[keyName] = module.default
                   resolve(module.default)
                 })
-              });
+              })
             }
           }
 
@@ -659,7 +684,7 @@
                   this.services[keyName] = module.default
                   resolve(module.default)
                 })
-              });
+              })
             }
           }
 
@@ -675,16 +700,14 @@
             for (const key in stateMutators) {
               const state = ReactiveState.getWithoutReactivity(ReactiveState, 'state')
 
-              this.stateMutators[key] = (...args) => {
-                stateMutators[key].bind(this)(state, ...args)
-              }
+              this.stateMutators[key] = (...args) => stateMutators[key].call(this, state, ...args)
             }
           }
 
           this.state = ReactiveState.getWithoutReactivity(ReactiveState, 'state')
         }
 
-        setLocalState(payload) {
+        mutateLocalState(payload) {
           this.localState = {
             ...this.localState,
             ...payload,
@@ -728,7 +751,7 @@
               //  This condition prevents the re-render on style change.
               //  The style is changed when the root is hidden,
               //  while the style file is being loaded by {@link injectStyleFiles}.
-              return;
+              return
             }
 
             observer.disconnect()
@@ -929,11 +952,323 @@
       customElements.define(PREFIX + '-' + name, AbacusComponent, options)
     }
 
+    const stateMutatorsWithStateArgPassed = {}
+    const stateObj = ReactiveState.getWithoutReactivity(ReactiveState, 'state')
+
+    for (const stateMutatorKey in stateMutators) {
+      stateMutatorsWithStateArgPassed[stateMutatorKey] = (...args) => stateMutators[stateMutatorKey].call(undefined, state, ...args)
+    }
+
     AbacusLib.createWebComponent = createWebComponent
+
+    class AbacusNewComponent extends HTMLElement {
+      #firstRenderer = true
+      $root
+
+      constants = constants
+      state = stateObj
+      stateMutators = stateMutatorsWithStateArgPassed
+
+      props
+
+      name
+      dontUseShadowDOM = false
+      html
+
+      localState
+
+      onAttributesChange
+
+      constructor() {
+        super()
+
+        this.name = mapComponentToComponentName.get(this.constructor)
+
+        if (this.dontUseShadowDOM) {
+          this.$root = this
+        } else {
+          this.attachShadow({ mode: 'open' })
+          this.$root = this.shadowRoot
+        }
+
+        if (this.plugins) {
+          this.pluginInjections = {}
+
+          for (const key of this.plugins) {
+            const [keyName, keyType] = key.split(':')
+            const promise = injectPlugin(keyName, keyType === 'module')
+
+            this.pluginInjections[keyName] = new Promise((resolve) => {
+              promise.then((module) => {
+                this.pluginInjections[keyName] = module.default
+                resolve(module.default)
+              })
+            })
+          }
+        }
+
+        if (this.services) {
+          this.serviceInjections = {}
+
+          for (const key of this.services) {
+            const [keyName, keyType] = key.split(':')
+            const promise = injectService(keyName, keyType === 'module')
+
+            this.serviceInjections[keyName] = new Promise((resolve) => {
+              promise.then((module) => {
+                this.serviceInjections[keyName] = module.default
+                resolve(module.default)
+              })
+            })
+          }
+        }
+      }
+
+      mutateLocalState(payload) {
+        for (const payloadKey in payload) {
+          this.localState[payloadKey] = payload[payloadKey]
+        }
+
+        this.render()
+      }
+
+      observeSlotContentHolders() {
+        const mutationCallback = () => {
+          observer.disconnect()
+          this.render()
+          observe()
+        }
+
+        const observer = new MutationObserver(mutationCallback)
+
+        const config = { childList: true, attributes: true, subtree: true, characterData: true }
+
+        const observe = () => {
+          const nodes = []
+
+          for (const $child of this.$root.children) {
+
+            if (isSlotContentHolder($child)) {
+              const $content = $child.content
+              observer.observe($content, config)
+              nodes.push($content)
+            }
+
+          }
+        }
+
+        observe()
+      }
+
+      observeAttributes() {
+        const mutationCallback = (record) => {
+          if (record[0].attributeName === 'style') {
+            // FIXME: Potentially this condition could be troublesome.
+            //  This condition prevents the re-render on style change.
+            //  The style is changed when the root is hidden,
+            //  while the style file is being loaded by {@link injectStyleFiles}.
+            return
+          }
+
+          observer.disconnect()
+          this.props = getAttrsNormalized(this)
+          this.render()
+          this.onAttributesChange?.call(this, this)
+          observe()
+        }
+
+        const observer = new MutationObserver(mutationCallback)
+
+        const config = { attributes: true, childList: false, subtree: false, characterData: false }
+
+        const observe = () => {
+          observer.observe(this.shadowRoot ? this : this.$root, config)
+        }
+
+        observe()
+      }
+
+      async connectedCallback() {
+        if (this.#firstRenderer) {
+          if (this.styleFilesURLs) {
+            const styleFileURLsFinal = this.styleFilesURLs.map((url) => {
+              if (url === 'default') {
+                return componentInjections[tagNameToComponentName(this.name)].replace('.js', '.css')
+              }
+
+              return url
+            })
+
+            injectStyleFiles(this, styleFileURLsFinal)
+          }
+
+          if (this.css) {
+            appendCSS(this.$root, this.css)
+          }
+
+          if (this.hasTranslates) {
+            this.translates = await injectTranslations(this.name)
+          }
+
+          this.props = getAttrsNormalized(this)
+
+          this.render(true)
+          this.observeAttributes()
+
+          if (!this.shadowRoot) {
+            this.observeSlotContentHolders()
+          }
+
+          this.onAfterFirstRender?.call(this, this)
+
+          this.#firstRenderer = false
+        }
+
+        if (this.stateEffects) {
+          this.stateEffects.forEach((stateEffect, index) => {
+            const prevReactionReceiverID = ReactiveState.reactionReceiverID
+            const reactionReceiverID = `${this.name}__stateEffect__${index}`
+
+            const fn = stateEffect.bind(this, this)
+
+            Reactivity.registerCallback(reactionReceiverID, fn)
+
+            ReactiveState.reactionReceiverID = reactionReceiverID
+            fn()
+            ReactiveState.reactionReceiverID = prevReactionReceiverID
+          })
+        }
+
+        Reactivity.registerCallback(this.name, this.render.bind(this))
+
+        if (this.translates) {
+          const configObj = ReactiveState.getWithoutReactivity(this, 'state', 'config', ReactiveState.SYMBOL_PROXY_TARGET)
+
+          Reactivity.registerReactiveProp(this.name, configObj, 'lang')
+        }
+      }
+
+      render() {
+        const prevReactionReceiverID = ReactiveState.reactionReceiverID
+
+        ReactiveState.reactionReceiverID = this.name
+
+        const state = ReactiveState.getWithoutReactivity(this, 'state')
+
+        let translations
+        if (this.translates) {
+          const lang = ReactiveState.getWithoutReactivity(this, 'state', 'config', 'lang')
+          translations = this.translates[lang]
+        }
+
+        const props = {
+          ctx: this,
+          t: translations,
+          constants,
+          state,
+          classnames,
+          localState: this.localState,
+          ...this.props,
+        }
+
+        const markup = this.html
+          ? typeof this.html === 'string'
+            ? this.html
+            : this.html.call(this, props)
+          : ''
+
+        if (!markup && markup !== '') {
+          throw `Component "${this.name}" has no markup.`
+        }
+
+        const template = document.createElement('template')
+        template.innerHTML = markup
+        const newNodesArray = [...template.content.children]
+
+        for (const $node of newNodesArray) {
+          $node[SymbolComponentName] = this.name
+        }
+
+        // Workaround to have the <slot/> principle without using Shadow DOM
+        // https://stackoverflow.com/questions/48726904/is-there-a-way-workaround-to-have-the-slot-principle-in-hyperhtml-without-using
+        if (!this.shadowRoot) {
+          const data = slotsAsData(this.$root)
+
+          const handleSlot = ($slot) => {
+            const slotName = $slot.getAttribute('name')
+
+            if (slotName && data[slotName]) {
+              if (!isTemplateNode(data[slotName])) {
+                throw `\nSlot named "${slotName}" in component "${this.name}" should be a <template /> node, now it is a <${$slot.tagName.toLowerCase()} /> node. Because <template /> nodes are required to use slots in components that are "{doNotUseShadowDOM = true}".\n`
+              }
+
+              const $slotData = data[slotName].content.cloneNode(true)
+              $slot.replaceWith($slotData)
+            }
+          }
+
+          // Handle component slots <slot name="…">
+          template.content.querySelectorAll('slot').forEach(handleSlot)
+
+          // Handle component slots inside <template /> nodes,
+          // because {querySelectorAll} should be called on each {template.content} to retrieve them
+          template.content.querySelectorAll('template').forEach(($slotContentHolder) => {
+            $slotContentHolder.content.querySelectorAll('slot').forEach(handleSlot)
+          })
+        } else {
+          throwIfSlotIsTemplateNode(this)
+        }
+        // ====================================================================
+
+        // FIXME: There is issues with the rendering when not filtered specific DOM Nodes
+        //  that were added asynchronously by another extensions or by the js code
+        const prevNodesArray = [...this.$root.children].filter((node) => node[SymbolComponentName] === this.name)
+
+        if (prevNodesArray.length === 0) {
+          this.$root.appendChild(template.content)
+          attachListenersToChildren(this.$root, this)
+          findAndInjectComponentsInNode(this.$root)
+        } else {
+          // Remove nodes that are not in the new content
+          // Note: we don't know what {tagName} to remove
+          //  if there are multiple nodes with the same {tagName}
+          if (newNodesArray.length < prevNodesArray.length) {
+            const newNodeTags = newNodesArray.map((node) => node.tagName)
+
+            for (const $node of prevNodesArray) {
+              if (!newNodeTags.includes($node.tagName)) {
+                $node.remove()
+              }
+            }
+          }
+
+          // Update nodes that are in the new content
+          newNodesArray.forEach(($el, index) => {
+            const $elOld = prevNodesArray[index]
+
+            // Add node that is in new content but not in the current content
+            if (!$elOld) {
+              this.$root.appendChild($el)
+              return
+            }
+
+            abacusNodesUpdate($elOld, $el, this)
+          })
+        }
+
+        ReactiveState.reactionReceiverID = prevReactionReceiverID
+      }
+    }
 
     findAndInjectComponentsInNode(document.body)
 
     window.AbacusLib.state = state
+    window.AbacusLib.Component = AbacusNewComponent
+    window.AbacusLib.defineCustomElement = (name, Component) => {
+      mapComponentToComponentName.set(Component, name)
+
+      customElements.define(PREFIX + '-' + name, Component)
+    }
   }
 
   window.AbacusLib = {

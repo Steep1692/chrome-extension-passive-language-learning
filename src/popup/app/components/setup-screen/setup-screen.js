@@ -4,9 +4,7 @@
 
     const $btnSubmit = showBtnSubmit ? (
       `<button is="pll-button" data-variant="submit" data-listen-on-Click="finishOnBoarding">
-          ${t.startLearning}
-          &nbsp;
-          <span class="emoji-wrap">
+          ${t.startLearning}&nbsp;<span class="emoji-wrap">
               <span class="emoji-valid">🐻</span>
               <span class="emoji-active">👍</span>
           </span>
@@ -46,11 +44,9 @@
 
     methods: {
       finishOnBoarding(ctx) {
-        ctx.stateMutators.updateConfig({
-          onboarded: true,
-        })
+        ctx.stateMutators.changeOnBoardedStatus(true)
         ctx.stateMutators.setRoute('dictionary')
-      }
+      },
     },
   })
 })();

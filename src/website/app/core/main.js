@@ -62,6 +62,9 @@
     themeControllerData,
   ]).then(([res1, res2]) => {
     ContentScriptApi.getInitStateData().then(({ state }) => {
+      // since we don't have onboarding screen in the Extension Demo on the website
+      StateMutators.changeOnBoardedStatus(state, true)
+
       AbacusLib.init({
         state,
         stateMutators: StateMutators,

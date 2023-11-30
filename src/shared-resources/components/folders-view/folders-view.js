@@ -66,8 +66,7 @@
 
   const html = ({ t, state, search, localState, classnames }) => {
     const { folders, currentFolderId } = state
-    const foldersFixed = folders.filter((f) => f)
-    const foldersFiltered = filterFolders(foldersFixed, search)
+    const foldersFiltered = filterFolders(folders, search)
     const $list = renderFolderList(foldersFiltered, localState.editId)
 
     return (
@@ -107,10 +106,8 @@
         const entriesId = event.currentTarget.getAttribute('data-entries-id')
         ctx.stateMutators.setCurrentFolderId(entriesId)
       },
-      onClickEditFolder(ctx, event) {
-        const id = event.currentTarget.getAttribute('data-id')
-
-        ctx.setLocalState({ editId: id })
+      enableEditingById(ctx, id) {
+        ctx.mutateLocalState({ editId: id })
 
         requestAnimationFrame(() => {
           const $input = ctx.$root.querySelector(`input[data-id="${id}"]`)
@@ -118,12 +115,33 @@
           $input.select()
         })
 
-        document.addEventListener('keydown', ctx.methods.escapeHandler)
-
         document.activeElement.blur()
       },
+      onClickEditFolder(ctx, event) {
+        const id = event.currentTarget.getAttribute('data-id')
+        ctx.methods.enableEditingById(ctx, id)
+      },
       createNewFolder(ctx) {
-        ctx.stateMutators.createNewFolder()
+        const id = ctx.stateMutators.createNewFolder()
+
+        requestAnimationFrame(() => {
+          const folders = this.state.folders
+
+          const scroll = folders.length > prevFoldersLength
+          prevFoldersLength =  folders.length
+
+          if (scroll) {
+            const $list = this.$root.querySelector('#body')
+            $list.scroll({
+              top: $list.scrollHeight,
+              behavior: 'smooth',
+            })
+          }
+
+          setTimeout(() => {
+            ctx.methods.enableEditingById(ctx, id)
+          }, 700)
+        })
       },
       deleteFolder(ctx, event) {
         const index = event.currentTarget.getAttribute('data-index')
@@ -133,15 +151,7 @@
       },
 
       cancelEditing(ctx) {
-        ctx.setLocalState({ editId: null })
-        document.removeEventListener('keydown', ctx.methods.escapeHandler)
-      },
-
-      escapeHandler(event) {
-        if (event.key === 'Escape') {
-          event.preventDefault()
-          this.methods.cancelEditing(this)
-        }
+        ctx.mutateLocalState({ editId: null })
       },
 
       onEditSuccess(ctx, event) {
@@ -153,7 +163,7 @@
           const newValue = $input.value
 
           this.stateMutators.editFolder($input.dataset.index, {
-            [$input.dataset['field-key']]: newValue,
+            name: newValue,
           })
         }
       },
@@ -161,6 +171,9 @@
       onInputKeyDown(ctx, event) {
         if (event.key === 'Enter') {
           ctx.methods.onEditSuccess(ctx, event)
+        } else if (event.key === 'Escape') {
+          event.preventDefault()
+          ctx.methods.cancelEditing(ctx, event)
         }
       },
       onInputChange(ctx, event) {
@@ -170,22 +183,5 @@
         event.currentTarget.hasChanged = false
       },
     },
-
-    stateEffects: [
-      function scrollBottomWhenItemAdded () {
-        const folders = this.state.folders
-
-        const scroll = folders.length > prevFoldersLength
-        prevFoldersLength =  folders.length
-
-        if (scroll) {
-          const $list = this.$root.querySelector('#body')
-          $list.scroll({
-            top: $list.scrollHeight,
-            behavior: 'smooth',
-          })
-        }
-      }
-    ],
   })
 })()

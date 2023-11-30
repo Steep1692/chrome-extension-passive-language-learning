@@ -2,11 +2,13 @@
     box-sizing: border-box;
     height: 44px;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(2, 1fr);
 }
 
 pll-splash-text {
     font-size: 1.5em;
+    border-bottom: 4px solid var(--primary);
+    box-shadow: 0 0 4px 1px rgba(0, 0, 0, 0.3);
 }
 
 button {
