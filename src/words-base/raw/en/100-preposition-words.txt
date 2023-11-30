@@ -59,12 +59,10 @@
     • 		Aboard
     • 		Amidst
     • 		Behind
-    • 		Betwixt
     • 		Fore
     • 		Lest
     • 		Midst
     • 		Notwithstanding
-    • 		O'er
     • 		Per
     • 		Mid
     • 		Thru
@@ -73,20 +71,10 @@
     • 		Underneath
     • 		Whence
     • 		Where
-    • 		Wherewith
-    • 		Wherewithal
-    • 		Withal
-    • 		Afore
-    • 		Anent
-    • 		Ere
-    • 		Insofar
     • 		Nigh
-    • 		Pendent
-    • 		Thwart
     • 		Than
     • 		Like
     • 		Alike
     • 		Unlike
     • 		Near
     • 		Far
-    • 		Abaft
