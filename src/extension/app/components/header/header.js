@@ -4,13 +4,13 @@
     const notOnboarded = !state.config.onboarded
 
     // <button class="${classnames({ 'active': path === 'home' })}" data-listen-on-Click="goHome">
-    //           <img src="/popup/app/components/header/home.svg" alt="Open home tab" />
+    //           <img src="/extension/app/components/header/home.svg" alt="Open home tab" />
     //         </button>
     //<button class="${classnames({ 'active': path === 'donate' })}" data-listen-on-Click="goDonate">
-    //           <img src="/popup/app/components/header/donate.svg" alt="Open donate tab" />
+    //           <img src="/extension/app/components/header/donate.svg" alt="Open donate tab" />
     //         </button>
     //         <button class="${classnames({ 'active': path === 'support' })}" data-listen-on-Click="goSupport">
-    //           <img src="/popup/app/components/header/support.svg" alt="Open support tab" />
+    //           <img src="/extension/app/components/header/support.svg" alt="Open support tab" />
     //         </button>
 
     if (notOnboarded) {
@@ -21,10 +21,10 @@
 
     return (
       `<button class="${classnames({ 'active': path === 'dictionary' })}" data-listen-on-Click="goDictionary">
-          <img src="/popup/app/components/header/dictionary.svg" alt="Open dictionary tab" />
+          <img src="/extension/app/components/header/dictionary.svg" alt="Open dictionary tab" />
         </button>
         <button class="${classnames({ 'active': path === 'settings' })}" data-listen-on-Click="goSettings">
-          <img src="/popup/app/components/header/settings.svg" alt="Open settings tab" />
+          <img src="/extension/app/components/header/settings.svg" alt="Open settings tab" />
         </button>`
     )
   }

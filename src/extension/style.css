@@ -1,6 +1,6 @@
 @font-face {
     font-family: CherryBombOne-Regular;
-    src: url(../fonts/CherryBombOne/CherryBombOne-Regular.ttf);
+    src: url(../shared-resources/assets/fonts/CherryBombOne/CherryBombOne-Regular.ttf);
 }
 
 html {
@@ -31,7 +31,7 @@ body .background {
     opacity: 0.8;
     filter: blur(2px);
 
-    background-image: url("/popup/images/bg/grass.png");
+    background-image: url("/extension/app/assets/images/bg/grass.png");
     background-position: bottom;
     background-size: 94% 20%;
     background-repeat: no-repeat;

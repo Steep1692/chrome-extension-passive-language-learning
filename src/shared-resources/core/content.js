@@ -1,3 +1,6 @@
+import Translator from '../plugins/translator.js'
+import { toast as Toaster } from '../plugins/toast.min.js'
+
 (async () => {
   'use strict'
 
@@ -14,21 +17,7 @@
         n.onload = resolve
       })
     }
-
-    static importScript = async (src) => {
-      const path = chrome.runtime.getURL(src)
-      return (await import(path))
-    }
   }
-
-  let Translator, Toaster
-
-  ScriptManager.importScript('shared-resources/plugins/translator.js').then((module) => {
-    Translator = module.default
-  })
-  ScriptManager.importScript('shared-resources/plugins/toast.min.js').then((module) => {
-    Toaster = module.toast
-  })
 
   const FOLDER_ID_SELECTION_WORDS = 'selection-words'
 

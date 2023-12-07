@@ -52,3 +52,5 @@ const ThemeController = (() => {
     applyTheme,
   }
 })()
+
+window.ThemeController = ThemeController

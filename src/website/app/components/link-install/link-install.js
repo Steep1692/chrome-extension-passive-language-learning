@@ -1,7 +1,7 @@
 (() => {
   const html = ({ title, imageSrc }) => {
     return (
-      `<a class="link" href="/popup/index.html" class="btn btn-primary" target="_blank" onclick="event.stopPropagation()">
+      `<a class="link" href="/extension/index.html" class="btn btn-primary" target="_blank" onclick="event.stopPropagation()">
         <img src="${imageSrc}" alt="${title}">
         <span>${title}</span>
       </a>`

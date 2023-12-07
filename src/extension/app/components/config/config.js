@@ -30,14 +30,14 @@
         <pll-checkbox
             checked="${pronounceWord}"
             label="${t.pronounceWord}"
-            icon-src="/popup/app/components/config/speaker${pronounceWord ? '' : '-muted'}.svg"
+            icon-src="/extension/app/components/config/speaker${pronounceWord ? '' : '-muted'}.svg"
             data-listen-on-change="changePronounceWord"
         ></pll-checkbox>
           
         <pll-checkbox
             checked="${highlightWords}"
             label="${t.highlightWords}"
-            icon-src="/popup/app/components/config/highlight-${highlightWords ? 'on' : 'off'}.svg"
+            icon-src="/extension/app/components/config/highlight-${highlightWords ? 'on' : 'off'}.svg"
             data-listen-on-change="changeHighlightWords"
         ></pll-checkbox>
         <hr>

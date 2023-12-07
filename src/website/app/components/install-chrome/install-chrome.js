@@ -3,7 +3,7 @@
     return (
       `<pll-link-install
             title="${t.title}"
-            image-src="/website/assets/images/icons/chrome.svg"
+            image-src="/website/app/assets/images/icons/chrome.svg"
             href="https://chrome.google.com/webstore/detail/passive-language-learning/nnjgjgjgjgjgjgjgjgjgjgjgjgjgjgj"
         ></pll-link-install>`
     )

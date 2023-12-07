@@ -116,3 +116,5 @@ const StateMutators = {
     }
   }
 }
+
+window.StateMutators = StateMutators

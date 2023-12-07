@@ -15,7 +15,7 @@
 
       return (
         `<button class="${className}" value="${lang}" data-listen-on-Click="onLanguageClick">
-          <img src="/popup/images/flags/${name}.png" alt="Ukrainian">
+          <img src="/shared-resources/assets/images/flags/${name}.png" alt="Ukrainian">
           <span>${t[name]}</span>
         </button>`
       )

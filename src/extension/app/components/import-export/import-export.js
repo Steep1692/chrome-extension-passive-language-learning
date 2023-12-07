@@ -16,11 +16,11 @@
   const html = ({ t }) => {
     return (
       `<button is="pll-button" data-color="add" data-listen-on-Click="import">
-          <img src="/popup/app/components/import-export/import.svg" alt="Import">
+          <img src="/extension/app/components/import-export/import.svg" alt="Import">
           ${t.import}
         </button>
         <button is="pll-button" data-color="back" data-listen-on-Click="export">
-          <img src="/popup/app/components/import-export/export.svg" alt="Export">
+          <img src="/extension/app/components/import-export/export.svg" alt="Export">
           ${t.export}
         </button>
         <input id="fileInput" type="file" style="position: absolute; visibility: hidden">`

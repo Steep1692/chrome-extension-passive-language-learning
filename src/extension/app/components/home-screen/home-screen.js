@@ -15,7 +15,7 @@
     } else {
       $children = (
         `<button is="pll-button" data-color="light" data-listen-on-Click="googleO2auth">
-            <img src="/popup/app/components/home-screen/google.svg" alt="">
+            <img src="/extension/app/components/home-screen/google.svg" alt="">
             ${t.signInWithGoogle}
         </button>`
       )

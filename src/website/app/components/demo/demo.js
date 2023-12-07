@@ -32,7 +32,7 @@
         width: 50px;
         height: 50px;
         
-        background-image: url("/website/assets/images/icons/transition-icon.png");
+        background-image: url("/website/app/assets/images/icons/transition-icon.png");
         background-size: contain;
         background-repeat: no-repeat;
         background-position: center;

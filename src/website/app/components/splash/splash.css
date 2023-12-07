@@ -55,7 +55,7 @@
     opacity: 0.8;
     filter: blur(1.5px);
 
-    background-image: url("/website/assets/images/bg/grass.png");
+    background-image: url("/website/app/assets/images/bg/grass.png");
     background-position: bottom;
     background-size: auto 25%;
     background-repeat: repeat-x;
@@ -81,7 +81,7 @@
     width: 100%;
     height: 36px;
 
-    background-image: url("/website/assets/images/icons/chevron-down.png");
+    background-image: url("/website/app/assets/images/icons/chevron-down.png");
     background-size: contain;
     background-repeat: no-repeat;
     background-color: transparent;

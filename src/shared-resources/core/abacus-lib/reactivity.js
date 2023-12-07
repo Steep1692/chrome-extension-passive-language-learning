@@ -40,7 +40,7 @@ export class Reactivity {
     const componentNames = Reactivity.reactiveProps.get(key)
 
     if (!componentNames) {
-      return;
+      return
     }
 
     const secondaryCallbacks = []
@@ -66,17 +66,44 @@ export class Reactivity {
 
 export class ReactiveState {
   static preventReactivityGetHandler = false
-  static REACTIVITY_PROXY_TARGET_KEY = Symbol('link on the original target object')
+  static SYMBOL_PROXY_TARGET = Symbol('proxy target')
+  static SYMBOL_OBJ_PARENT = Symbol('object parent in state')
   static reactionReceiverID = null
-  static state
+  static onStateMutation = null
+
+  static init = (state) => {
+    ReactiveState.state = ReactiveState.proxyState(state)
+  }
 
   static needsProxying = (value) => {
     return typeof value === 'object'
       && value !== null
       && !(value instanceof Promise)
+      && !(ReactiveState.SYMBOL_PROXY_TARGET in value)
   }
 
-  static proxyState = (obj) => {
+  static getMutationRecordPath = (target) => {
+    ReactiveState.disableReactivity()
+    const mutationRecordPath = []
+
+    let parent = target[ReactiveState.SYMBOL_OBJ_PARENT]
+    let child = target[ReactiveState.SYMBOL_PROXY_TARGET]
+
+    while (parent) {
+      const parentProp = Reflect.ownKeys(parent).find((key, _, arr) => {
+        return parent[key]?.[ReactiveState.SYMBOL_PROXY_TARGET] === child
+      })
+
+      mutationRecordPath.unshift(parentProp)
+      child = parent[ReactiveState.SYMBOL_PROXY_TARGET]
+      parent = parent[ReactiveState.SYMBOL_OBJ_PARENT]
+    }
+
+    ReactiveState.enableReactivity()
+    return mutationRecordPath
+  }
+
+  static proxyState = (obj, parentObj) => {
     let setInProcess = false
     let proxyingChildren
 
@@ -99,35 +126,66 @@ export class ReactiveState {
 
         if (!proxyingChildren) {
           if (ReactiveState.needsProxying(value)) {
-            target[prop] = ReactiveState.proxyState(value)
+            target[prop] = ReactiveState.proxyState(value, target)
           }
 
-          Reactivity.handleReactivePropChange(target, prop, value)
+          Reactivity.handleReactivePropChange(target, prop)
+          const mutationRecord = {
+            path: ReactiveState.getMutationRecordPath(target),
+            prop,
+            value,
+          }
+
+          ReactiveState.onStateMutation?.(mutationRecord)
         }
 
         setInProcess = false
 
         return res
       },
+      deleteProperty(target, prop) {
+        const res = Reflect.deleteProperty(...arguments)
+
+        if (Array.isArray(target)) {
+          // when removing an item from array there will be 2 operations:
+          // 1. delete item
+          // 2. change array length
+          // we need to ignore the "1. delete item", so we return here
+          return res
+        }
+
+        Reactivity.handleReactivePropChange(target, prop)
+        const mutationRecord = {
+          path: ReactiveState.getMutationRecordPath(target),
+          prop,
+          value: undefined,
+          deleteProperty: true,
+        }
+
+        ReactiveState.onStateMutation?.(mutationRecord)
+
+        return res
+      },
     }
 
-    obj[ReactiveState.REACTIVITY_PROXY_TARGET_KEY] = obj
+    obj[ReactiveState.SYMBOL_PROXY_TARGET] = obj
+
+    if (parentObj) {
+      obj[ReactiveState.SYMBOL_OBJ_PARENT] = parentObj
+    }
+
     const objProxy = new Proxy(obj, handler)
 
     proxyingChildren = true
     for (const objKey in objProxy) {
       const value = objProxy[objKey]
       if (ReactiveState.needsProxying(value)) {
-        objProxy[objKey] = ReactiveState.proxyState(value)
+        objProxy[objKey] = ReactiveState.proxyState(value, objProxy)
       }
     }
     proxyingChildren = false
 
     return objProxy
-  }
-
-  static init = (state) => {
-    ReactiveState.state = ReactiveState.proxyState(state)
   }
 
   static disableReactivity = () => {

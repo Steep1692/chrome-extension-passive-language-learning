@@ -2,13 +2,13 @@
   const QR_SIZE = 192
 
   const appendQrCode = async function () {
-    await this.plugins.QrCode
-
-    new QRCode(this.$root, {
-      text: this.props.url,
-      width: QR_SIZE,
-      height: QR_SIZE,
-    });
+    // await this.plugins.QrCode
+    //
+    // new QRCode(this.$root, {
+    //   text: this.props.url,
+    //   width: QR_SIZE,
+    //   height: QR_SIZE,
+    // });
   }
 
   const translatesEN = {
@@ -45,7 +45,7 @@
       }
     `,
 
-    plugins: ['QrCode'],
+    // plugins: ['QrCode'],
 
     onAfterFirstRender: appendQrCode,
     onAttributesChange: appendQrCode,

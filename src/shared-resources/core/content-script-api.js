@@ -16,3 +16,5 @@ class ContentScriptApi {
     return await ContentScriptApi.#emit({ type: 'add-word', data: { word }, })
   }
 }
+
+globalThis.ContentScriptApi = ContentScriptApi
