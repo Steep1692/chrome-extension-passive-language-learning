@@ -86,18 +86,16 @@
   }
 
   let prevFoldersLength = 0
-  AbacusLib.createWebComponent('folders-view', {
-    hasTranslates: true,
-
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    hasTranslates = true
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-
-    localState: {
+    ]
+    localState = {
       editId: null,
-    },
-    methods: {
+    }
+    methods = {
       onFolderClick(ctx, event) {
         if (ctx.localState.editId) {
           return
@@ -182,6 +180,7 @@
       onInputFocus(ctx, event) {
         event.currentTarget.hasChanged = false
       },
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('folders-view', Component)
 })()

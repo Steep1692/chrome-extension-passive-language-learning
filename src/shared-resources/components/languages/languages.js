@@ -48,11 +48,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('languages', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
           display: grid;
           align-items: flex-end;
@@ -99,14 +98,14 @@
           width: 64px;
           height: 42px;
       }
-    `,
-
-    methods: {
+    `
+    methods = {
       onLanguageClick(ctx, event) {
         const value = event.currentTarget.getAttribute('value')
 
         this.stateMutators.updateConfig({ toLang: value })
       },
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('languages', Component)
 })()

@@ -42,10 +42,10 @@
   </div>
   `
 
-  AbacusLib.createWebComponent('card', {
-    dontUseShadowDOM: true,
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    html = html
+    css = `
       .card {
           width: 300px;
           height: 254px;
@@ -134,6 +134,7 @@
           padding: 10px;
           background-color: white;
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('card', Component)
 })()

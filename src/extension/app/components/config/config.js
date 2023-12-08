@@ -75,11 +75,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('config', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
           padding: 3px 0;
           border: 1px solid darkkhaki;
@@ -97,9 +96,8 @@
           height: 1px;
           border: none;
       }
-    `,
-
-    methods: {
+    `
+    methods = {
       disableOnThisWebsite(ctx, event) {
         const ignoredOriginsNew = ctx.state.config.ignoredOrigins
         const origin = ctx.constants.clientInfo.origin
@@ -125,6 +123,7 @@
       changeHighlightWords: (ctx, event) => {
         ctx.stateMutators.changeHighlightWords(event.detail.checked)
       },
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('config', Component)
 })()

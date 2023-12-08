@@ -40,11 +40,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('support-screen', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
         display: grid;
         grid-template-columns: 1fr;
@@ -61,6 +60,7 @@
       iframe .segment_header {
         display: none;
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('support-screen', Component)
 })();

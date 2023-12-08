@@ -78,7 +78,7 @@
 
   const examplesUK = {
     body1: '– Як я можу допомогти тобі?<br>',
-    video1: '/website/assets/video/subtitles-example.uk.vtt',
+    video1: '/website/app/assets/video/subtitles-example.uk.vtt',
     body2: '– Росія атакувала Львів дронами-камікадзе, є влучання <br>',
     body3: '– Наш фінансовий аналітик спрогнозував, що наступного року дохід компанії зросте на 15%.<br>',
     body4: '– Привіт, Дмитре! Як твої справи?<br>',
@@ -86,7 +86,7 @@
 
   const examplesEN = {
     body1: '– Computers have revolutionized the ways we lead our everyday lives… <br>',
-    video1: '/website/assets/video/subtitles-example.en.vtt',
+    video1: '/website/app/assets/video/subtitles-example.en.vtt',
     body2: '– omg ion mb tmrow... i gtg 2 wrk. ttyl!',
     body3: '– Our corporate meeting was a long and tedious affair…',
     body4: '– Hi, Dmitry! How are you doing?<br>',
@@ -94,7 +94,7 @@
 
   const examplesZH = {
     body1: '– Computers have revolutionized the ways we lead our everyday lives… <br>',
-    video1: '/website/assets/video/subtitles-example.zh.vtt',
+    video1: '/website/app/assets/video/subtitles-example.zh.vtt',
     body2: '– omg ion mb tmrow... i gtg 2 wrk. ttyl!',
     body3: '– Our corporate meeting was a long and tedious affair…',
     body4: '– Hi, Dmitry! How are you doing?<br>',
@@ -106,12 +106,11 @@
     'zh': examplesZH,
   }
 
-  AbacusLib.createWebComponent('examples', {
-    dontUseShadowDOM: true,
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    translates = translates
+    html = html
+    css = `
     .examples {
           display: grid;
           justify-content: center;
@@ -128,6 +127,7 @@
               padding: 16px 8px;
           }
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('examples', Component)
 })()

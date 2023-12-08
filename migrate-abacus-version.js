@@ -46,7 +46,7 @@ function updateContentByLocation(fileData, newData, location) {
   // Update the file content based on the location
   const fileDataSplit = fileData.split('\n')
   const startLine = location.start.line - 1
-  const startColumn = location.start.column - 1
+  const startColumn = location.start.column - 2 // may be an error here and should be -1, but it actually works better with -2
   const endLine = location.end.line - 1
   const endColumn = location.end.column - 1
 
@@ -84,6 +84,8 @@ const entries = generateJSEntryObject();
 for (const entry in entries) {
   const notComponent = !entry.includes('/components/')
   const injectionsListFile = entry.includes('/injections.js')
+  // const testFile = entry.includes('/home-screen/')
+
   if (notComponent || injectionsListFile) {
     continue
   }
@@ -102,17 +104,19 @@ for (const entry in entries) {
   const componentConfig = createWebComponent.expression.arguments[1].properties.reduce((acc, prop) => {
     const key = prop.key.name
     const loc = prop.value.loc
+    const method = prop.method
 
-    acc.push([key, loc])
+    acc.push([key, loc, method])
 
     return acc
   }, [])
 
 
-  const classProperties = componentConfig.map(([key, loc]) => {
+  const classProperties = componentConfig.map(([key, loc, method]) => {
     const value = extractContentByLocation(source, loc)
+    const equalSign = method ? '' : ' = '
 
-    return `${key} = ${value}`
+    return key + equalSign + value
   })
 
   const replaceContent = [
@@ -125,7 +129,5 @@ for (const entry in entries) {
 
   const newFileContent = updateContentByLocation(source, strReplaceContent, createWebComponent.loc)
 
-  debugger
   fs.writeFileSync(entries[entry], newFileContent, 'utf8')
-  break
 }

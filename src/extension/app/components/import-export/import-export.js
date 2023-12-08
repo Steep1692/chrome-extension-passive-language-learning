@@ -50,15 +50,13 @@
 
   const fileMaxSize = 1024 * 1024 * 10 // 10 MB
 
-  AbacusLib.createWebComponent('import-export', {
-    translates,
-
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-
-    methods: {
+    ]
+    methods = {
       export() {
         const jsonData = {
           folders: this.state.folders,
@@ -131,5 +129,6 @@
         fileElement?.click()
       },
     }
-  })
+  }
+  AbacusLib.defineCustomElement('import-export', Component)
 })()

@@ -28,11 +28,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('payment', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
         display: grid;
         grid-template-columns: 1fr;
@@ -43,6 +42,7 @@
       img {
         width: 148px;
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('payment', Component)
 })();

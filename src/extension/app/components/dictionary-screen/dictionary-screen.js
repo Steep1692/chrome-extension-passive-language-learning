@@ -6,11 +6,10 @@
     )
   }
 
-  AbacusLib.createWebComponent('dictionary-screen', {
-    hasTranslates: true,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    hasTranslates = true
+    html = html
+    css = `
       :host {
         min-height: 0;
         height: 100%;
@@ -23,5 +22,6 @@
         text-align: center;
       }
     `
-  })
+  }
+  AbacusLib.defineCustomElement('dictionary-screen', Component)
 })();

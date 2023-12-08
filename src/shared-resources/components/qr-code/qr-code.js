@@ -29,10 +29,9 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('qr-code', {
-    translates,
-
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    css = `
       :host {
         display: grid;
         grid-template-columns: 1fr;
@@ -43,11 +42,9 @@
       a {
         font-size: 1.4rem;
       }
-    `,
-
-    // plugins: ['QrCode'],
-
-    onAfterFirstRender: appendQrCode,
-    onAttributesChange: appendQrCode,
-  })
+    `
+    onAfterFirstRender = appendQrCode
+    onAttributesChange = appendQrCode
+  }
+  AbacusLib.defineCustomElement('qr-code', Component)
 })();

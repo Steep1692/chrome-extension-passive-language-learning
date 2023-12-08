@@ -11,29 +11,27 @@
     )
   }
 
-  AbacusLib.createWebComponent('dictionary', {
-    hasTranslates: true,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    hasTranslates = true
+    html = html
+    css = `
       :host {
         display: grid;
         grid-template-rows: auto 1fr;
         grid-row-gap: 4px;
         min-height: 0;
       }
-    `,
-
-    localState: {
+    `
+    localState = {
       search: '',
-    },
-
-    methods: {
+    }
+    methods = {
       onInput(ctx, event) {
         ctx.mutateLocalState({
           search: event.target.value
         })
       }
     }
-  })
+  }
+  AbacusLib.defineCustomElement('dictionary', Component)
 })()

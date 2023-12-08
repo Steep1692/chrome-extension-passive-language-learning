@@ -33,11 +33,12 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('extension-demo', {
-    html,
-    translates,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    html = html
+    translates = translates
+    styleFilesURLs = [
       'default',
-    ],
-  })
+    ]
+  }
+  AbacusLib.defineCustomElement('extension-demo', Component)
 })()

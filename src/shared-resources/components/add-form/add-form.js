@@ -176,7 +176,7 @@
       }
     }
 
-    plugins = ['Translator:module']
+    plugins = ['Translator']
 
     onAfterFirstRender = async function (ctx) {
       const $translationInput = ctx.$root.getElementById('translation-input')

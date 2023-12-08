@@ -2,7 +2,7 @@
   const html = function (props) {
     const { title, subtitle, textExample, videoExample } = props
     const $textExample = (slotName) => `<template slot="${slotName}">${textExample}</template>`
-    const $playerExample = (slotName) => `<template slot="${slotName}"><pll-video-player slot="${slotName}" src="/website/assets/video/video-example.mp4#t=7" track-src="${videoExample}"></pll-video-player></template>`
+    const $playerExample = (slotName) => `<template slot="${slotName}"><pll-video-player slot="${slotName}" src="/website/app/assets/video/video-example.mp4#t=7" track-src="${videoExample}"></pll-video-player></template>`
     const $textDemo = `<pll-demo>
       ${$textExample('card-body-1')}
       ${$textExample('card-body-2')}
@@ -58,10 +58,10 @@
     }
   `
 
-  AbacusLib.createWebComponent('example', {
-    dontUseShadowDOM: true,
-
-    html,
-    css,
-  })
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    html = html
+    css = css
+  }
+  AbacusLib.defineCustomElement('example', Component)
 })()

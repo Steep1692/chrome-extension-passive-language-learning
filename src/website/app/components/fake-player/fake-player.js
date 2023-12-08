@@ -9,10 +9,10 @@
     )
   }
 
-  AbacusLib.createWebComponent('fake-player', {
-    dontUseShadowDOM: true,
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    html = html
+    css = `
     .root {
       --button-height: 28px;
     
@@ -52,6 +52,7 @@
       border-bottom: var(--button-height) solid transparent;
       border-left: calc(var(--button-height) * 2 * 0.86) solid #fff;
     }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('fake-player', Component)
 })()

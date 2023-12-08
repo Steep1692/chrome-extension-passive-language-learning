@@ -13,7 +13,7 @@ export const throwIfSlotIsTemplateNode = (ctx) => {
 
   for (const slotName in data) {
     if (isTemplateNode(data[slotName])) {
-      throw `\nSlot named "${slotName}" in component "${ctx.componentName}" should NOT be a <template /> node. Because <template /> nodes are NOT ALLOWED in components that use shadowDOM (all component use shadowDOM by default, to change it – pass the prop when creating a component {doNotUseShadowDOM = true}).\n`
+      throw `\nSlot named "${slotName}" in component "${ctx.name}" should NOT be a <template /> node. Because <template /> nodes are NOT ALLOWED in components that use shadowDOM (all component use shadowDOM by default, to change it – pass the prop when creating a component {dontUseShadowDOM = true}).\n`
     }
   }
 }

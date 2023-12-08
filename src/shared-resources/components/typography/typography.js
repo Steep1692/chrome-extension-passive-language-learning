@@ -7,10 +7,11 @@
     )
   }
 
-  AbacusLib.createWebComponent('typography', {
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-  })
+    ]
+  }
+  AbacusLib.defineCustomElement('typography', Component)
 })()

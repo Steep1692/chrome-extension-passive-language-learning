@@ -43,11 +43,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('donate-screen', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
         display: grid;
         align-content: flex-start;
@@ -55,6 +54,7 @@
         grid-row-gap: 8px;
         text-align: center;
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('donate-screen', Component)
 })();

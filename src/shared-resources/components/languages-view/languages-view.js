@@ -22,15 +22,16 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('languages-view', {
-    html,
-    translates,
-    css: `
+  class Component extends AbacusLib.Component {
+    html = html
+    translates = translates
+    css = `
       :host {
           display: grid;
           justify-content: center;
           grid-row-gap: 16px;
       }
     `
-  })
+  }
+  AbacusLib.defineCustomElement('languages-view', Component)
 })()

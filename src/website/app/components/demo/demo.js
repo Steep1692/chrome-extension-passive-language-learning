@@ -61,10 +61,10 @@
     }
     `
 
-  AbacusLib.createWebComponent('demo', {
-    dontUseShadowDOM: true,
-
-    html,
-    css,
-  })
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    html = html
+    css = css
+  }
+  AbacusLib.defineCustomElement('demo', Component)
 })()

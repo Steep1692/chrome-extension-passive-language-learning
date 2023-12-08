@@ -94,15 +94,13 @@
     `
   }
 
-  AbacusLib.createWebComponent('words-view', {
-    hasTranslates: true,
-
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    hasTranslates = true
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-
-    methods: {
+    ]
+    methods = {
       createNewWord(ctx) {
         ctx.stateMutators.createNewWord(ctx.state.currentFolderId)
 
@@ -206,6 +204,7 @@
           this.stateMutators.deleteWord(currentFolderId, i)
         }
       },
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('words-view', Component)
 })()

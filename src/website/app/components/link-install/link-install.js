@@ -8,9 +8,9 @@
     )
   }
 
-  AbacusLib.createWebComponent('link-install', {
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    html = html
+    css = `
       .link {
           display: flex;
           align-items: center;
@@ -37,6 +37,7 @@
           height: 72px;
           margin-right: 12px;
       }
-    `,
-  })
+    `
+  }
+  AbacusLib.defineCustomElement('link-install', Component)
 })()

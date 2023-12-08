@@ -49,15 +49,13 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('home-screen', {
-    translates,
-
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-
-    methods: {
+    ]
+    methods = {
       async googleO2auth(ctx) {
         const GoogleServices = await ctx.services.Google
         const accessToken = await GoogleServices.authorize()
@@ -67,11 +65,11 @@
         }
         return !!accessToken
       }
-    },
-
-    services: ['Google:module'],
+    }
+    services = ['Google']
     onAfterFirstRender(ctx) {
       // ctx.methods.googleO2auth(ctx)
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('home-screen', Component)
 })()

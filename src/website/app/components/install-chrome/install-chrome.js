@@ -28,8 +28,9 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('install-chrome', {
-    html,
-    translates,
-  })
+  class Component extends AbacusLib.Component {
+    html = html
+    translates = translates
+  }
+  AbacusLib.defineCustomElement('install-chrome', Component)
 })()

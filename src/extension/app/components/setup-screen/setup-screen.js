@@ -34,19 +34,18 @@
     )
   }
 
-  AbacusLib.createWebComponent('setup-screen', {
-    hasTranslates: true,
-
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    hasTranslates = true
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
-
-    methods: {
+    ]
+    methods = {
       finishOnBoarding(ctx) {
         ctx.stateMutators.changeOnBoardedStatus(true)
         ctx.stateMutators.setRoute('dictionary')
       },
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('setup-screen', Component)
 })();

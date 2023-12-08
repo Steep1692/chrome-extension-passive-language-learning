@@ -11,11 +11,11 @@
     </pll-bubble-background>
   `
 
-  AbacusLib.createWebComponent('splash', {
-    html,
-
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    html = html
+    styleFilesURLs = [
       'default'
-    ],
-  })
+    ]
+  }
+  AbacusLib.defineCustomElement('splash', Component)
 })()

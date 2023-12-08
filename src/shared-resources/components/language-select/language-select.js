@@ -43,11 +43,10 @@
     zh: translatesUK,
   }
 
-  AbacusLib.createWebComponent('language-select', {
-    translates,
-
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       .language-select {
         display: grid;
         grid-row-gap: 16px;
@@ -100,9 +99,8 @@
         transform: scale(0.95);
         box-shadow: 0 4px 2px -2px gray;
       }
-    `,
-
-    methods: {
+    `
+    methods = {
       onLanguageClick(ctx, event) {
         event.stopPropagation()
 
@@ -110,6 +108,7 @@
 
         this.stateMutators.updateConfig({ lang: value, fromLang: value, theme: value })
       }
-    },
-  })
+    }
+  }
+  AbacusLib.defineCustomElement('language-select', Component)
 })()

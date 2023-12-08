@@ -1,12 +1,12 @@
 (() => {
-  AbacusLib.createWebComponent('route', {
-    dontUseShadowDOM: true,
-    css: `
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    css = `
       pll-route {
         display: contents;
       }
-    `,
-    stateEffects: [
+    `
+    stateEffects = [
       function (ctx) {
         const showContent = ctx.props.path === ctx.state.router.path
 
@@ -17,5 +17,6 @@
         }
       },
     ]
-  })
+  }
+  AbacusLib.defineCustomElement('route', Component)
 })()
