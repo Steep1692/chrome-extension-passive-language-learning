@@ -1,7 +1,7 @@
 import { getAttrsNormalized } from './attributes.js'
 import { ReactiveState } from './reactivity.js'
+import { LISTENER_PREFIX } from './constants.js'
 
-const LISTENER_PREFIX = 'data-listen-on-'
 const attachListeners = ($el, ctx) => {
   const attrs = getAttrsNormalized($el)
 

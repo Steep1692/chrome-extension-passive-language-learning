@@ -1,4 +1,4 @@
-import { PREFIX } from './constants.js'
+import { EL_KEY, PREFIX } from './constants.js'
 
 export const dashCaseToCamel = (str) => str.replace(
   /-(\w)/g,
@@ -15,9 +15,8 @@ export const tagNameToComponentName = (tagName) => {
   return tagName[0].toUpperCase() + dashCaseToCamel(tagName).slice(1)
 }
 
-const elKey = 'data-key'
-export const hasNodesKeys = ($el1, $el2) => $el1.hasAttribute(elKey) || $el2.hasAttribute(elKey)
-export const isNodesKeysDifferent = ($el1, $el2) => $el1.getAttribute(elKey) !== $el2.getAttribute(elKey)
+export const hasNodesKeys = ($el1, $el2) => $el1.hasAttribute(EL_KEY) || $el2.hasAttribute(EL_KEY)
+export const isNodesKeysDifferent = ($el1, $el2) => $el1.getAttribute(EL_KEY) !== $el2.getAttribute(EL_KEY)
 export const isNodesTagsDifferent = ($el1, $el2) => $el1.tagName !== $el2.tagName
 export const isSlotContentHolder = ($el) => $el.hasAttribute('slot')
 export const isAbacusExtendComponent = ($el) => {

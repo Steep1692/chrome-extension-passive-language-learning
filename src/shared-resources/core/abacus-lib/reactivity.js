@@ -71,8 +71,9 @@ export class ReactiveState {
   static reactionReceiverID = null
   static onStateMutation = null
 
-  static init = (state) => {
-    ReactiveState.state = ReactiveState.proxyState(state)
+  static init = ({ state, onStateMutation }) => {
+    ReactiveState.state = ReactiveState.proxyState({ ...state })
+    ReactiveState.onStateMutation = onStateMutation
   }
 
   static needsProxying = (value) => {
@@ -163,7 +164,6 @@ export class ReactiveState {
         }
 
         ReactiveState.onStateMutation?.(mutationRecord)
-
         return res
       },
     }

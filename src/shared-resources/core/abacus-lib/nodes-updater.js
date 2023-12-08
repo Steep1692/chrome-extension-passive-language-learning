@@ -1,5 +1,3 @@
-import { attachListenersToChildren } from './dom-events.js'
-import { moveAttributes } from './attributes.js'
 import {
   isNodesKeysDifferent,
   isNodesTagsDifferent,
@@ -11,8 +9,10 @@ import {
 
   hasNodesKeys,
 } from './utils.js'
+import { attachListenersToChildren } from './dom-events.js'
+import { moveAttributes } from './attributes.js'
 
-const updateSlotContentHoldersInChildren = ($old, $new, ctx) => {
+const updateSlotContentHoldersInChildren = ($old, $new, ctx, onNewNodesAdded) => {
   const $oldSlotContentHolders = [...$old.children].filter(isSlotContentHolder)
   const $newSlotContentHolders = [...$new.children].filter(isSlotContentHolder)
 
@@ -24,7 +24,8 @@ const updateSlotContentHoldersInChildren = ($old, $new, ctx) => {
       abacusNodesUpdate(
         isTemplate ? $oldSlotContent.content : $oldSlotContent,
         isTemplate ? $newSlotContent.content : $newSlotContent,
-        ctx
+        ctx,
+        onNewNodesAdded
       )
     })
   } else {
@@ -32,7 +33,7 @@ const updateSlotContentHoldersInChildren = ($old, $new, ctx) => {
   }
 }
 
-const updateChildNodes = ($old, $new, ctx) => {
+const updateChildNodes = ($old, $new, ctx, onNewNodesAdded) => {
   if (
     $old.childNodes.length
     && $new.childNodes.length
@@ -44,21 +45,21 @@ const updateChildNodes = ($old, $new, ctx) => {
     const $newChildNodes = [...$new.childNodes]
 
     for (let i = 0; i < $newChildNodes.length; i++) {
-      abacusNodesUpdate($old.childNodes[i], $newChildNodes[i], ctx)
+      abacusNodesUpdate($old.childNodes[i], $newChildNodes[i], ctx, onNewNodesAdded)
     }
   } else {
     const newContent = $new.innerHTML ?? $new.textContent
 
     if ('innerHTML' in $old) {
       $old.innerHTML = newContent
-      attachListenersToChildren($old, ctx) // attach listeners to new nodes in DOM
+      onNewNodesAdded($old)
     } else {
       $old.textContent = newContent
     }
   }
 }
 
-export const abacusNodesUpdate = ($old, $new, ctx) => {
+export const abacusNodesUpdate = ($old, $new, ctx, onNewNodesAdded) => {
   if ($new.nodeType !== $old.nodeType) {
     console.trace()
   }
@@ -74,12 +75,12 @@ export const abacusNodesUpdate = ($old, $new, ctx) => {
   }
 
   if ($new.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-    updateChildNodes($old, $new, ctx)
+    updateChildNodes($old, $new, ctx, onNewNodesAdded)
     return
   }
 
   if ($new.nodeType === Node.COMMENT_NODE) {
-    updateChildNodes($old, $new, ctx)
+    updateChildNodes($old, $new, ctx, onNewNodesAdded)
     return
   }
 
@@ -89,8 +90,7 @@ export const abacusNodesUpdate = ($old, $new, ctx) => {
     || (hasNodesKeys($old, $new) && isNodesKeysDifferent($old, $new))
   ) {
     $old.parentNode.replaceChild($new, $old)
-    attachListenersToChildren($new.parentNode, ctx) // attach listeners to new nodes in DOM
-    findAndInjectComponentsInNode($new.parentNode)
+    onNewNodesAdded($new.parentNode)
   } else {
     moveAttributes($new, $old)
 
@@ -98,9 +98,9 @@ export const abacusNodesUpdate = ($old, $new, ctx) => {
       || (isAbacusExtendComponent($new) && isAbacusExtendComponent($old))
 
     if (abacusElement) {
-      updateSlotContentHoldersInChildren($old, $new, ctx)
+      updateSlotContentHoldersInChildren($old, $new, ctx, onNewNodesAdded)
     } else {
-      updateChildNodes($old, $new, ctx)
+      updateChildNodes($old, $new, ctx, onNewNodesAdded)
     }
   }
 }

@@ -25,7 +25,7 @@ export class Injector {
 
   cache = {}
 
-  inject = (name, module) => {
+  inject = (name) => {
     const url = this.injections[name]
 
     if (!url) {
