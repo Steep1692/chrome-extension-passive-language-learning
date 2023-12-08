@@ -119,7 +119,7 @@ for (const entry in entries) {
     `class Component extends AbacusLib.Component {`,
     ...prependIndent(classProperties, INDENT),
     `}`,
-    `AbacusLib.registerComponent('${componentName}', Component)`
+    `AbacusLib.defineCustomElement('${componentName}', Component)`
   ]
   const strReplaceContent = prependIndent(replaceContent, INDENT).join('\n')
 
