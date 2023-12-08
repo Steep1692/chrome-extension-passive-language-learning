@@ -1,24 +1,11 @@
 import path from 'path'
-import { glob } from 'glob'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { URL } from 'url'
 import { IN_FOLDER_NAME, OUT_FOLDER_NAME } from './builder-config.js'
+import { generateJSEntryObject } from './utils.js'
 const __dirname = new URL('.', import.meta.url).pathname
 
-const generateEntryObject = () => {
-  return glob.sync('./' + IN_FOLDER_NAME + "/**/*.js").reduce(
-    (acc, path) => {
-      const pathFixed = './' + path;
-      const filename = path.replace(IN_FOLDER_NAME, '') // partially used as an output path
-      acc[filename] = pathFixed;
-
-      return acc;
-    },
-    {}
-  );
-};
-
-const entries = generateEntryObject();
+const entries = generateJSEntryObject();
 
 export default {
   mode: 'development',

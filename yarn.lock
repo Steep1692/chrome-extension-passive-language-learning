@@ -526,6 +526,18 @@
   "resolved" "https://registry.npmjs.org/@xtuc/long/-/long-4.2.2.tgz"
   "version" "4.2.2"
 
+"abstract-syntax-tree@^2.21.1":
+  "integrity" "sha512-RP/n3s6gqZj7ZhstZtgxLCNws6riVxw+CYjQRyXq6RmLhndsBW0a+arwlGAkJjeH7Jp6+40rxoveAOCBRBF6ZA=="
+  "resolved" "https://registry.npmjs.org/abstract-syntax-tree/-/abstract-syntax-tree-2.21.1.tgz"
+  "version" "2.21.1"
+  dependencies:
+    "ast-types" "0.14.2"
+    "astring" "^1.8.6"
+    "esquery" "^1.5.0"
+    "meriyah" "^4.3.7"
+    "pure-conditions" "^1.2.1"
+    "source-map" "^0.7.4"
+
 "acorn-import-assertions@^1.9.0":
   "integrity" "sha512-cmMwop9x+8KFhxvKrKfPYmN6/pKTYYHBqLa0DfvVZcKMJWNyWLnaqND7dx/qn66R7ewM1UX5XMaDVP5wlVTaVA=="
   "resolved" "https://registry.npmjs.org/acorn-import-assertions/-/acorn-import-assertions-1.9.0.tgz"
@@ -878,6 +890,18 @@
   "integrity" "sha512-Q+JC7Whu8HhmTdBph/Tq59IoRtoy6KAm5zzPv00WdujX82lbAL8K7WVjne7vdCsAmbF4AYaDOPyO3k0kl8qIrw=="
   "resolved" "https://registry.npmjs.org/assign-symbols/-/assign-symbols-1.0.0.tgz"
   "version" "1.0.0"
+
+"ast-types@0.14.2":
+  "integrity" "sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA=="
+  "resolved" "https://registry.npmjs.org/ast-types/-/ast-types-0.14.2.tgz"
+  "version" "0.14.2"
+  dependencies:
+    "tslib" "^2.0.1"
+
+"astring@^1.8.6":
+  "integrity" "sha512-ISvCdHdlTDlH5IpxQJIex7BWBywFWgjJSVdwst+/iQCoEYnyOaQ95+X1JGshuBjGp6nxKUy1jMgE3zPqN7fQdg=="
+  "resolved" "https://registry.npmjs.org/astring/-/astring-1.8.6.tgz"
+  "version" "1.8.6"
 
 "async-done@^1.2.0", "async-done@^1.2.2":
   "integrity" "sha512-uYkTP8dw2og1tu1nmza1n1CMW0qb8gWWlwqMmLb7MhBVs4BXrFziT6HXUd+/RlRA/i4H9AkofYloUbs1fwMqlw=="
@@ -2525,7 +2549,7 @@
   "resolved" "https://registry.npmjs.org/esprima/-/esprima-2.7.3.tgz"
   "version" "2.7.3"
 
-"esquery@^1.4.2":
+"esquery@^1.4.2", "esquery@^1.5.0":
   "integrity" "sha512-YQLXUplAwJgCydQ78IMJywZCceoqk1oH01OERdSAJc/7U2AylwjhSCLDEtqwg811idIS/9fIU5GjG73IgjKMVg=="
   "resolved" "https://registry.npmjs.org/esquery/-/esquery-1.5.0.tgz"
   "version" "1.5.0"
@@ -4634,6 +4658,11 @@
   "resolved" "https://registry.npmjs.org/merge2/-/merge2-1.4.1.tgz"
   "version" "1.4.1"
 
+"meriyah@^4.3.7":
+  "integrity" "sha512-IepKx25Ph/5T67o+Q6Ezrt+repNAcJsydfsNWgelrdOhdcQcs4NI9qPHxB9Qz3WSYpj77hScNJrq5IjdwE1woQ=="
+  "resolved" "https://registry.npmjs.org/meriyah/-/meriyah-4.3.9.tgz"
+  "version" "4.3.9"
+
 "micromatch@^3.0.4", "micromatch@^3.1.10", "micromatch@^3.1.4":
   "integrity" "sha512-MWikgl9n9M3w+bpsY3He8L+w9eF9338xRl8IAO5viDizwSzziFEyUzo2xrrloB64ADbTf8uA8vRqqttDTOmccg=="
   "resolved" "https://registry.npmjs.org/micromatch/-/micromatch-3.1.10.tgz"
@@ -5925,6 +5954,11 @@
   "resolved" "https://registry.npmjs.org/punycode/-/punycode-2.3.1.tgz"
   "version" "2.3.1"
 
+"pure-conditions@^1.2.1":
+  "integrity" "sha512-MKk7sKQiR3Fe3bL/QedUZ1eVoNO0xpOCyiTGdVrK+4ZCDa9TgwNp6D/U1FthjhVGS9a857BS84WncvZvOYECUw=="
+  "resolved" "https://registry.npmjs.org/pure-conditions/-/pure-conditions-1.2.1.tgz"
+  "version" "1.2.1"
+
 "q@^1.1.2":
   "integrity" "sha512-kV/CThkXo6xyFEZUugw/+pIOywXcDbFYgSct5cT3gqlbkBE1SJdwy6UQoZvodiWF/ckQLZyDE/Bu1M6gVu5lVw=="
   "resolved" "https://registry.npmjs.org/q/-/q-1.5.1.tgz"
@@ -6569,6 +6603,11 @@
   "resolved" "https://registry.npmjs.org/source-map/-/source-map-0.6.1.tgz"
   "version" "0.6.1"
 
+"source-map@^0.7.4":
+  "integrity" "sha512-l3BikUxvPOcn5E74dZiq5BGsTb5yEwhaTSzccU6t4sDOH8NWJCstKO5QT2CvtFoK6F0saL7p9xHAqHOlCPJygA=="
+  "resolved" "https://registry.npmjs.org/source-map/-/source-map-0.7.4.tgz"
+  "version" "0.7.4"
+
 "source-map@~0.5.3":
   "integrity" "sha512-LbrmJOMUSdEVxIKvdcJzQC+nQhe8FUZQTXQy6+I75skNgn3OoQ0DZA8YnFa7gp8tqtL3KPf1kmo0R5DoApeSGQ=="
   "resolved" "https://registry.npmjs.org/source-map/-/source-map-0.5.7.tgz"
@@ -7124,6 +7163,11 @@
   "version" "1.0.0"
   dependencies:
     "escape-string-regexp" "^1.0.2"
+
+"tslib@^2.0.1":
+  "integrity" "sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q=="
+  "resolved" "https://registry.npmjs.org/tslib/-/tslib-2.6.2.tgz"
+  "version" "2.6.2"
 
 "tty-browserify@0.0.1":
   "integrity" "sha512-C3TaO7K81YvjCgQH9Q1S3R3P3BtN3RIM8n+OvX4il1K1zgE8ZhI0op7kClgkxtutIE8hQrcrHBXvIheqKUUCxw=="
