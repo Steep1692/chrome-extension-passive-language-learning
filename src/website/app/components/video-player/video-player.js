@@ -10,15 +10,17 @@
     )
   }
 
-  AbacusLib.createWebComponent('video-player', {
-    dontUseShadowDOM: true,
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    dontUseShadowDOM = true
+    html = html
+    css = `
       .root {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-    `,
-  })
+    `
+  }
+
+  AbacusLib.defineCustomElement('video-player', Component)
 })()

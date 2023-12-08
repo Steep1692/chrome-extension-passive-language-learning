@@ -57,12 +57,14 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('outro', {
-    html,
-    dontUseShadowDOM: true,
-    translates,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    html = html
+    dontUseShadowDOM = true
+    translates = translates
+    styleFilesURLs = [
       'default',
-    ],
-  })
+    ]
+  }
+
+  AbacusLib.defineCustomElement('outro', Component)
 })()

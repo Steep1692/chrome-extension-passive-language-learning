@@ -1,4 +1,4 @@
-const folder = '/shared-resources/'
+const folder = '/website/app/components/'
 
 const componentInjections = {
   Card: folder + 'card/card.js',

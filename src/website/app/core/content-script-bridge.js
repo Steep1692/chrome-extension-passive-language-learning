@@ -9,7 +9,7 @@ const fakeChromeObject = {
     },
     sendMessage: async (tabId, message, callback) => {
       return new Promise((resolve) => {
-        fakeChromeObject.listener && fakeChromeObject.listener(message, {}, (...args) => {
+        chrome.listener && chrome.listener(message, {}, (...args) => {
           callback && callback(...args)
           resolve(...args)
         })
@@ -21,8 +21,8 @@ const fakeChromeObject = {
       return '/' + path
     },
     onMessage: {
-      addListener: (callback) => {
-        fakeChromeObject.listener = callback
+      addListener(callback) {
+        chrome.listener = callback
       }
     }
   },
@@ -62,7 +62,7 @@ const fakeChromeObject = {
     },
     onChanged: {
       addListener: (callback) => {
-        fakeChromeObject.storage.listeners.push(callback)
+        chore.storage.listeners.push(callback)
       }
     },
   }
@@ -79,8 +79,7 @@ function merge_options(obj1, obj2) {
 }
 
 if (!('chrome' in window)) {
-  chrome = {}
-  window.chrome = chrome
+  window.chrome = {}
 }
 
 merge_options(window.chrome, fakeChromeObject)

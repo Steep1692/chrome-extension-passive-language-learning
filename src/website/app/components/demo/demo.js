@@ -1,5 +1,5 @@
 (() => {
-  const html = function () {
+  const html = () => {
     return (
       `<div class="demo">
         <pll-card pll-no-replace>

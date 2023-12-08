@@ -1,11 +1,11 @@
 @font-face {
     font-family: CherryBombOne-Regular;
-    src: url(/shared-resources/fonts/CherryBombOne/CherryBombOne-Regular.ttf);
+    src: url(/website/shared-resources/fonts/CherryBombOne/CherryBombOne-Regular.ttf);
 }
 
 @font-face {
     font-family: Skranji-Regular;
-    src: url(/shared-resources/fonts/Skranji/Skranji-Regular.ttf);
+    src: url(/website/shared-resources/fonts/Skranji/Skranji-Regular.ttf);
 }
 
 body {

@@ -10,7 +10,7 @@ import '/src/shared-resources/core/state-mutators.js'
 import '/src/shared-resources/core/abacus-lib/abacus-lib.js'
 import '/src/shared-resources/core/theme-controller.js'
 
-(async () => {
+const main = async () => {
   const { state } = await ContentScriptApi.getInitStateData()
 
   const handleStateMutation = (mutationRecord) => {
@@ -46,4 +46,7 @@ import '/src/shared-resources/core/theme-controller.js'
 
   // Initial theme
   ThemeController.applyTheme(state.config.theme)
-})()
+}
+
+// Put it in setTimeout so "content.js" will be executed first, and then bridge and its API
+setTimeout(main, 0)
