@@ -1,8 +1,10 @@
 import path from 'path'
 import MiniCssExtractPlugin from 'mini-css-extract-plugin'
 import { URL } from 'url'
+
 import { IN_FOLDER_NAME, OUT_FOLDER_NAME } from './builder-config.js'
 import { generateJSEntryObject } from './utils.js'
+
 const __dirname = new URL('.', import.meta.url).pathname
 
 const entries = generateJSEntryObject();
@@ -13,11 +15,6 @@ export default {
   // to prevent appearing {eval} in "development" mode
   // as it leads to an 'unsafe-eval' error
   devtool: 'cheap-module-source-map',
-
-  context: __dirname,
-  node: {
-    __filename: true
-  },
 
   entry: entries,
   module: {
@@ -47,11 +44,11 @@ export default {
     filename: "[name]",
   },
   plugins: [
-    new MiniCssExtractPlugin({
-      filename: ({ chunk }) => {
-        // Prevent "main.js.css", ...
-        return chunk.name.replace(".js", "") + ".css";
-      },
-    }),
+    // new MiniCssExtractPlugin({
+    //   filename: ({ chunk }) => {
+    //     // Prevent "main.js.css", ...
+    //     return chunk.name.replace(".js", "") + ".css";
+    //   },
+    // }),
   ],
 };
