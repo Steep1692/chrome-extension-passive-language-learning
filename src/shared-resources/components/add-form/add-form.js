@@ -93,15 +93,15 @@
   let cancelFetchTranslationSignal
   let isLastTransSetFromAPI = false
 
-  AbacusLib.createWebComponent('add-form', {
-    translates,
+  class Component extends AbacusLib.Component {
+    translates = translates
 
-    html,
-    styleFilesURLs: [
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
+    ]
 
-    methods: {
+    methods = {
       onInputFrom: debounce(async function (ctx, event) {
         if (!translator) {
           return;
@@ -174,11 +174,11 @@
 
         return false
       }
-    },
+    }
 
-    plugins: ['Translator:module'],
+    plugins = ['Translator:module']
 
-    onAfterFirstRender: async function (ctx) {
+    onAfterFirstRender = async function (ctx) {
       const $translationInput = ctx.$root.getElementById('translation-input')
       originalPlaceholder = $translationInput.placeholder
 
@@ -193,8 +193,8 @@
 
       await this.plugins.Translator
       translator = new this.plugins.Translator(ctx.state.config.fromLang, ctx.state.config.toLang)
-    },
-    stateEffects: [
+    }
+    stateEffects = [
       function () {
         const fromLang = this.state.config.lang
         const toLang = this.state.config.toLang
@@ -203,6 +203,8 @@
           translator.updateLanguages(fromLang, toLang)
         }
       },
-    ],
-  })
+    ]
+  }
+
+  AbacusLib.defineCustomElement('add-form', Component)
 })()

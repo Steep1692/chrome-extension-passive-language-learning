@@ -30,9 +30,10 @@
     zh: translatesZH,
   }
 
-  AbacusLib.createWebComponent('splash-text', {
-    html,
-    css: `
+  class Component extends AbacusLib.Component {
+    translates = translates
+    html = html
+    css = `
       :host {
           box-sizing: border-box;
           height: 100%;
@@ -70,7 +71,8 @@
           color: #f36060;
       }
 
-    `,
-    translates,
-  })
+    `
+  }
+
+  AbacusLib.defineCustomElement('splash-text', Component)
 })()

@@ -2,11 +2,11 @@
   // Code is based on the following codepen by @Paolo-Duzioni: https://codepen.io/Paolo-Duzioni/pen/MQmbJo
   const html = `<slot name="default"></slot>`
 
-  AbacusLib.createWebComponent('bubble-background', {
-    html,
-    styleFilesURLs: [
+  class Component extends AbacusLib.Component {
+    html = html
+    styleFilesURLs = [
       'default',
-    ],
+    ]
 
     onAfterFirstRender() {
       const appendAnimationBubbles = () => {
@@ -27,5 +27,7 @@
 
       appendAnimationBubbles()
     }
-  })
+  }
+
+  AbacusLib.defineCustomElement('bubble-background', Component)
 })()
