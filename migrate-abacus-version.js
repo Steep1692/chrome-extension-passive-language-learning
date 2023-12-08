@@ -1,3 +1,42 @@
+/**
+ * Migrate from Abacus v0.1.0 interface to v0.2.0 interface
+ * This script will migrate the component defining code to the new interface
+ *
+ * FROM:
+ * (() => {
+ *   const html = () => {
+ *     return "Hello world"
+ *   }
+ *
+ *   AbacusLib.createWebComponent('hello-world', {
+ *     html: html
+ *     css: `
+ *       :host {
+ *           font-size: 1.5em;
+ *       }
+ *     `
+ *   })
+ * })()
+ *
+ * TO:
+ * (() => {
+ *   const html = () => {
+ *     return "Hello world"
+ *   }
+ *
+ *   class Component extends AbacusLib.Component {
+ *     html = html
+ *     css = `
+ *       :host {
+ *           font-size: 1.5em;
+ *       }
+ *     `
+ *   }
+ *
+ *   AbacusLib.registerComponent('hello-world', Component)
+ * })()
+ */
+
 import AbstractSyntaxTree from 'abstract-syntax-tree'
 import fs from 'fs'
 
@@ -35,26 +74,32 @@ function extractContentByLocation(fileData, location) {
   return extractedContentArray.join('\n')
 }
 
+const prependIndent = (array, indent) => {
+  return array.map(line => indent + line)
+}
+
 const entries = generateJSEntryObject();
 
 
 for (const entry in entries) {
-  if (!entry.includes('/components/') || entry.includes('/injections.js')) {
+  const notComponent = !entry.includes('/components/')
+  const injectionsListFile = entry.includes('/injections.js')
+  if (notComponent || injectionsListFile) {
     continue
   }
 
   const source = fs.readFileSync(entries[entry], "utf8")
   const tree = new AbstractSyntaxTree(source, {
     next: true,
-    raw: true
   })
   const createWebComponent = tree.find(`ExpressionStatement[expression.callee.property.name="createWebComponent"]`).pop()
   if (!createWebComponent) {
     continue
   }
 
+  const INDENT = '  '
   const componentName = createWebComponent.expression.arguments[0].value
-  const props = createWebComponent.expression.arguments[1].properties.reduce((acc, prop) => {
+  const componentConfig = createWebComponent.expression.arguments[1].properties.reduce((acc, prop) => {
     const key = prop.key.name
     const loc = prop.value.loc
 
@@ -63,24 +108,24 @@ for (const entry in entries) {
     return acc
   }, [])
 
-  const indent = '    '
-  const halfIndent = indent.slice(0, indent / 2 + 1)
 
-  const classProperties = props.map(([key, loc]) => {
+  const classProperties = componentConfig.map(([key, loc]) => {
     const value = extractContentByLocation(source, loc)
 
     return `${key} = ${value}`
-  }).join('\n' + indent)
+  })
 
-  const replaceContent = `${halfIndent}class Component extends AbacusLib.Component {
-${indent}${classProperties}
-  }
-  
-  AbacusLib.registerComponent('${componentName}', Component)`
+  const replaceContent = [
+    `class Component extends AbacusLib.Component {`,
+    ...prependIndent(classProperties, INDENT),
+    `}`,
+    `AbacusLib.registerComponent('${componentName}', Component)`
+  ]
+  const strReplaceContent = prependIndent(replaceContent, INDENT).join('\n')
 
+  const newFileContent = updateContentByLocation(source, strReplaceContent, createWebComponent.loc)
 
-  const newFileContent = updateContentByLocation(source, replaceContent, createWebComponent.loc)
-
-  fs.writeFileSync(entries[entry], newFileContent, 'utf8')
   debugger
+  fs.writeFileSync(entries[entry], newFileContent, 'utf8')
+  break
 }
